@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P値と帰無仮説と信頼区間の視覚化</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+    }
+    #canvas-container {
+      display: flex;
+      justify-content: center;
+    }
+    #controls {
+      margin-top: 20px;
+      text-align: center;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 0 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .explanation {
+      max-width: 800px;
+      margin: 20px auto;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div id="controls">
+    <button id="playPauseBtn">一時停止</button>
+    <button id="resetBtn">リセット</button>
+  </div>
+  <div class="explanation">
+    <h2>P値と帰無仮説と信頼区間の関係</h2>
+    <p>このアニメーションでは、帰無仮説（H₀）の分布が徐々に移動していく様子を表示しています。</p>
+    <p>青色の曲線: 帰無仮説（H₀）の分布</p>
+    <p>緑色の曲線: データから得られた分布</p>
+    <p>赤色の垂直線: 実際に観測された値</p>
+    <p>灰色の領域: 95%信頼区間（有意水準5%の場合）</p>
+    <p>紫色の領域: P値（観測値以上の確率）</p>
+    <p>アニメーションが進むにつれて、帰無仮説の分布が移動し、P値が変化します。P値が0.05を下回ると、帰無仮説が棄却されます。</p>
+  </div>
+
+  <script>
+    let nullHypothesisMean = 0;
+    let observedMean = 2;
+    let sampleMean = 2;
+    let standardError = 0.5;
+    let alpha = 0.05;
+    let isPlaying = true;
+    let direction = 1;
+    let speed = 0.02;
+
+    function setup() {
+      const canvas = createCanvas(800, 500);
+      canvas.parent('canvas-container');
+      
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      playPauseBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        playPauseBtn.textContent = isPlaying ? '一時停止' : '再開';
+      });
+      
+      const resetBtn = document.getElementById('resetBtn');
+      resetBtn.addEventListener('click', () => {
+        nullHypothesisMean = 0;
+        direction = 1;
+        isPlaying = true;
+        playPauseBtn.textContent = '一時停止';
+      });
+    }
+
+    function draw() {
+      background(255);
+      
+      // アニメーション制御
+      if (isPlaying) {
+        nullHypothesisMean += direction * speed;
+        
+        // 方向転換
+        if (nullHypothesisMean > 4 || nullHypothesisMean < -4) {
+          direction *= -1;
+        }
+      }
+      
+      // 座標系の設定
+      const margin = 50;
+      const plotWidth = width - 2 * margin;
+      const plotHeight = 300;
+      const plotY = height - margin - plotHeight;
+      
+      // X軸とY軸を描画
+      stroke(0);
+      line(margin, height - margin, width - margin, height - margin);
+      line(margin, plotY, margin, height - margin);
+      
+      // X軸の目盛りを描画
+      for (let i = -4; i <= 4; i++) {
+        const x = map(i, -4, 4, margin, width - margin);
+        line(x, height - margin, x, height - margin + 5);
+        textAlign(CENTER);
+        text(i, x, height - margin + 20);
+      }
+      
+      // データ分布の描画（緑色）
+      drawNormalDistribution(sampleMean, standardError, color(0, 150, 0, 100), plotWidth, plotHeight, margin, plotY);
+      
+      // 帰無仮説の分布を描画（青色）
+      drawNormalDistribution(nullHypothesisMean, standardError, color(0, 0, 255, 100), plotWidth, plotHeight, margin, plotY);
+      
+      // 観測値を垂直線で表示（赤色）
+      const observedX = map(observedMean, -4, 4, margin, width - margin);
+      stroke(255, 0, 0);
+      strokeWeight(2);
+      line(observedX, plotY, observedX, height - margin);
+      
+      // 95%信頼区間を描画（灰色）
+      const ci_lower = sampleMean - 1.96 * standardError;
+      const ci_upper = sampleMean + 1.96 * standardError;
+      const ciLowerX = map(ci_lower, -4, 4, margin, width - margin);
+      const ciUpperX = map(ci_upper, -4, 4, margin, width - margin);
+      
+      noStroke();
+      fill(200, 200, 200, 100);
+      rect(ciLowerX, plotY, ciUpperX - ciLowerX, plotHeight);
+      
+      // P値の領域を描画（紫色）
+      const pValueArea = calculatePValueArea(nullHypothesisMean, standardError, observedMean, plotWidth, plotHeight, margin, plotY);
+      
+      // P値を計算して表示
+      const pValue = calculatePValue(nullHypothesisMean, standardError, observedMean);
+      
+      // 状態の表示
+      textAlign(LEFT);
+      textSize(16);
+      fill(0);
+      text(`帰無仮説の平均値: ${nullHypothesisMean.toFixed(2)}`, margin, 30);
+      text(`観測値: ${observedMean.toFixed(2)}`, margin, 60);
+      text(`P値: ${pValue.toFixed(4)}`, margin, 90);
+      
+      // 帰無仮説の棄却状態を表示
+      if (pValue < alpha) {
+        fill(255, 0, 0);
+        text(`帰無仮説は棄却されます (P < ${alpha})`, margin, 120);
+      } else {
+        fill(0, 100, 0);
+        text(`帰無仮説は棄却されません (P ≥ ${alpha})`, margin, 120);
+      }
+      
+      // 帰無仮説が信頼区間に含まれるかを表示
+      if (nullHypothesisMean >= ci_lower && nullHypothesisMean <= ci_upper) {
+        fill(0, 100, 0);
+        text(`帰無仮説の値は95%信頼区間内にあります`, margin, 150);
+      } else {
+        fill(255, 0, 0);
+        text(`帰無仮説の値は95%信頼区間外にあります`, margin, 150);
+      }
+    }
+    
+    function drawNormalDistribution(mean, sd, color, plotWidth, plotHeight, margin, plotY) {
+      noStroke();
+      fill(color);
+      
+      beginShape();
+      vertex(margin, plotY + plotHeight);
+      
+      for (let x = -4; x <= 4; x += 0.1) {
+        const xPos = map(x, -4, 4, margin, margin + plotWidth);
+        const y = normalPDF(x, mean, sd);
+        const yPos = map(y, 0, normalPDF(mean, mean, sd), plotY + plotHeight, plotY);
+        vertex(xPos, yPos);
+      }
+      
+      vertex(margin + plotWidth, plotY + plotHeight);
+      endShape(CLOSE);
+    }
+    
+    function calculatePValueArea(mean, sd, observed, plotWidth, plotHeight, margin, plotY) {
+      noStroke();
+      fill(128, 0, 128, 100);
+      
+      beginShape();
+      const obsX = map(observed, -4, 4, margin, margin + plotWidth);
+      vertex(obsX, plotY + plotHeight);
+      
+      for (let x = observed; x <= 4; x += 0.1) {
+        const xPos = map(x, -4, 4, margin, margin + plotWidth);
+        const y = normalPDF(x, mean, sd);
+        const yPos = map(y, 0, normalPDF(mean, mean, sd), plotY + plotHeight, plotY);
+        vertex(xPos, yPos);
+      }
+      
+      vertex(margin + plotWidth, plotY + plotHeight);
+      endShape(CLOSE);
+    }
+    
+    function normalPDF(x, mean, sd) {
+      return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
+    }
+    
+    function calculatePValue(mean, sd, observed) {
+      // 簡易的なP値計算（右側のみ）
+      // 正規分布の場合、Z値を計算して標準正規分布の累積分布関数を使う
+      const z = (observed - mean) / sd;
+      return 1 - normalCDF(z);
+    }
+    
+    function normalCDF(z) {
+      // 標準正規分布の累積分布関数の近似
+      if (z < 0) return 1 - normalCDF(-z);
+      const t = 1 / (1 + 0.2316419 * z);
+      const d = 0.3989423 * Math.exp(-z * z / 2);
+      return 1 - d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    }
+  </script>
+</body>
+</html>

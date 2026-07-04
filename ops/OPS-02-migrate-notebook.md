@@ -15,5 +15,8 @@ Input: a notebook path under `lab/` (e.g., `lab/math/eulers_number.ipynb`). Outp
 5. Frontmatter: set `source:` to the lab notebook path, `status: migrated`, best-guess `prerequisites`/`related` (flag uncertain ones).
 6. Verify per `ops/definition-of-done.md`, including a verbatim-narrative spot check.
 
+## Formatting allowance
+Notebook markdown often separates list-like lines with single newlines, which MDX collapses into one paragraph. You MAY restructure such runs into Markdown bullet lists (wording unchanged, noted in the task report). Bare metadata labels (e.g., a lone "prompt" line) may be replaced by an MDX provenance comment.
+
 ## Concept-id naming
 kebab-case English, e.g. `eulers-number`, `central-limit-theorem`, `t-test`. One id is forever — do not rename existing ids.

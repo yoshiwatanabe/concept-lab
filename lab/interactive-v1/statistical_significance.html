@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>統計的有意差の視覚化</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.4/jstat.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+    #container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .slider-container {
+      flex-grow: 1;
+      margin: 0 20px;
+    }
+    input[type=range] {
+      width: 100%;
+    }
+    .stats-info {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      border-left: 4px solid #4CAF50;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+    .legend {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+    }
+    .legend-item {
+      display: inline-block;
+      margin-right: 20px;
+    }
+    .legend-color {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>統計的有意差の視覚化</h1>
+    
+    <div class="stats-info" id="stats-info">
+      <p><strong>実験内容:</strong> 新薬が旧薬に比べ統計的に有意な改善を示すかどうかの検定</p>
+      <p id="p-value">現在の p 値: 計算中...</p>
+      <p id="significance">統計的有意差: 計算中...</p>
+    </div>
+    
+    <div class="controls">
+      <button id="reset-btn">リセット</button>
+      <div class="slider-container">
+        <input type="range" id="sample-slider" min="5" max="100" value="5">
+        <p id="sample-size">サンプルサイズ: 5</p>
+      </div>
+      <button id="play-btn">アニメーション再生</button>
+    </div>
+    
+    <div id="sketch-holder"></div>
+    
+    <div class="legend">
+      <div class="legend-item"><span class="legend-color" style="background-color: rgba(70, 130, 180, 0.6);"></span>旧薬群</div>
+      <div class="legend-item"><span class="legend-color" style="background-color: rgba(220, 20, 60, 0.6);"></span>新薬群</div>
+      <div class="legend-item"><span class="legend-color" style="background-color: rgba(70, 130, 180, 1);"></span>旧薬平均</div>
+      <div class="legend-item"><span class="legend-color" style="background-color: rgba(220, 20, 60, 1);"></span>新薬平均</div>
+    </div>
+    
+    <div class="stats-info">
+      <h3>統計的有意差の理解</h3>
+      <p>p 値が 0.05 未満（有意水準 α）の場合、群間の差は統計的に有意と判断されます。</p>
+      <p>サンプルサイズが大きくなると、ランダムな変動の影響が小さくなり、実際の差が明確になります。</p>
+      <p>下部のグラフは、サンプルサイズの増加に伴う p 値の変化を示しています。赤い破線は 0.05 の閾値を表します。</p>
+    </div>
+  </div>
+
+  <script>
+    let oldDrugData = [];
+    let newDrugData = [];
+    let sampleSizes = [];
+    let pValues = [];
+    let currentSampleSize = 5;
+    let isPlaying = false;
+    let animationTimer;
+    const maxSamples = 150;
+    
+    // 正規分布に従うランダムデータの生成
+    function generateData() {
+      oldDrugData = [];
+      newDrugData = [];
+      sampleSizes = [];
+      pValues = [];
+      
+      // 平均と標準偏差
+      const oldMean = 5.0;
+      const newMean = 5.5; // 効果サイズ 0.5
+      const stdDev = 2.0;
+      
+      // データポイントの生成
+      for (let i = 0; i < maxSamples; i++) {
+        // Box-Muller 法で正規分布
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        
+        const u3 = Math.random();
+        const u4 = Math.random();
+        const z1 = Math.sqrt(-2.0 * Math.log(u3)) * Math.cos(2.0 * Math.PI * u4);
+        
+        oldDrugData.push(z0 * stdDev + oldMean);
+        newDrugData.push(z1 * stdDev + newMean);
+      }
+      
+      // 初期の p 値の計算
+      for (let i = 5; i <= maxSamples; i++) {
+        sampleSizes.push(i);
+        pValues.push(calculateTTest(oldDrugData.slice(0, i), newDrugData.slice(0, i)));
+      }
+    }
+    
+    // t検定の計算
+    function calculateTTest(sample1, sample2) {
+      const n1 = sample1.length;
+      const n2 = sample2.length;
+      
+      if (n1 === 0 || n2 === 0) return 1.0;
+      
+      // 平均の計算
+      const mean1 = sample1.reduce((a, b) => a + b, 0) / n1;
+      const mean2 = sample2.reduce((a, b) => a + b, 0) / n2;
+      
+      // 分散の計算
+      const variance1 = sample1.reduce((a, b) => a + Math.pow(b - mean1, 2), 0) / (n1 - 1);
+      const variance2 = sample2.reduce((a, b) => a + Math.pow(b - mean2, 2), 0) / (n2 - 1);
+      
+      // プールされた分散
+      const pooledVariance = ((n1 - 1) * variance1 + (n2 - 1) * variance2) / (n1 + n2 - 2);
+      
+      // jStat を用いた正しい p 値計算
+      let t = Math.abs(mean1 - mean2) / Math.sqrt(pooledVariance * (1/n1 + 1/n2));
+      let df = n1 + n2 - 2;
+      let pValue = 2 * (1 - jStat.studentt.cdf(t, df));
+      return pValue;
+    }
+    
+    // P5.js のスケッチ
+    const sketch = (p) => {
+      let distributionGraphHeight, pValueGraphHeight;
+      
+      p.setup = function() {
+        const canvas = p.createCanvas(800, 600);
+        canvas.parent('sketch-holder');
+        p.textFont('Arial');
+        
+        distributionGraphHeight = p.height * 0.6;
+        pValueGraphHeight = p.height * 0.3;
+        
+        generateData();
+        updateUI();
+      };
+      
+      p.draw = function() {
+        p.background(255);
+        
+        // 分布グラフ
+        drawDistributionGraph();
+        
+        // p 値グラフ
+        drawPValueGraph();
+      };
+      
+      function drawDistributionGraph() {
+        p.push();
+        p.translate(50, 20);
+        const graphWidth = p.width - 100;
+        const graphHeight = distributionGraphHeight - 40;
+        
+        // 軸の描画
+        p.stroke(0);
+        p.line(0, graphHeight, graphWidth, graphHeight); // x軸
+        p.line(0, 0, 0, graphHeight); // y軸
+        
+        // 旧薬群と新薬群のヒストグラムの計算
+        const oldHistogram = calculateHistogram(oldDrugData.slice(0, currentSampleSize), 0, 12, 24);
+        const newHistogram = calculateHistogram(newDrugData.slice(0, currentSampleSize), 0, 12, 24);
+        
+        // 最大頻度の取得（スケーリング用）
+        const maxFreq = Math.max(
+          ...oldHistogram.map(bin => bin.count),
+          ...newHistogram.map(bin => bin.count)
+        );
+        
+        // ヒストグラムの描画
+        drawHistogram(oldHistogram, maxFreq, graphWidth, graphHeight, [70, 130, 180, 150]);
+        drawHistogram(newHistogram, maxFreq, graphWidth, graphHeight, [220, 20, 60, 150]);
+        
+        // 各群の平均値の計算と描画
+        const oldMean = oldDrugData.slice(0, currentSampleSize).reduce((a, b) => a + b, 0) / currentSampleSize;
+        const newMean = newDrugData.slice(0, currentSampleSize).reduce((a, b) => a + b, 0) / currentSampleSize;
+        
+        const xScaleFactor = graphWidth / 12;
+        
+        p.stroke(70, 130, 180);
+        p.strokeWeight(2);
+        p.line(oldMean * xScaleFactor, 0, oldMean * xScaleFactor, graphHeight);
+        
+        p.stroke(220, 20, 60);
+        p.strokeWeight(2);
+        p.line(newMean * xScaleFactor, 0, newMean * xScaleFactor, graphHeight);
+        
+        // x軸のラベル
+        p.strokeWeight(1);
+        p.fill(0);
+        p.textAlign(p.CENTER, p.TOP);
+        for (let i = 0; i <= 12; i += 2) {
+          p.text(i, i * xScaleFactor, graphHeight + 10);
+        }
+        
+        // タイトルとラベル
+        p.textAlign(p.CENTER, p.TOP);
+        const pValue = pValues[currentSampleSize - 5];
+        const isSignificant = pValue < 0.05;
+        p.fill(isSignificant ? [0, 128, 0] : 0);
+        p.textSize(16);
+        p.text(`分布の比較 (n=${currentSampleSize})`, graphWidth / 2, -15);
+        p.textSize(14);
+        p.text(`p 値: ${pValue.toFixed(4)} (${isSignificant ? '有意' : '有意でない'})`, 
+               graphWidth / 2, 5);
+        
+        p.textAlign(p.CENTER, p.TOP);
+        p.fill(0);
+        p.text("効果値", graphWidth / 2, graphHeight + 30);
+        
+        p.push();
+        p.translate(-30, graphHeight / 2);
+        p.rotate(-p.HALF_PI);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text("頻度", 0, 0);
+        p.pop();
+        
+        p.pop();
+      }
+      
+      function calculateHistogram(data, min, max, bins) {
+        const binWidth = (max - min) / bins;
+        const histogram = [];
+        
+        for (let i = 0; i < bins; i++) {
+          const binStart = min + i * binWidth;
+          const binEnd = binStart + binWidth;
+          const count = data.filter(d => d >= binStart && d < binEnd).length;
+          histogram.push({
+            start: binStart,
+            end: binEnd,
+            count: count
+          });
+        }
+        
+        return histogram;
+      }
+      
+      function drawHistogram(histogram, maxFreq, graphWidth, graphHeight, color) {
+        const binWidth = graphWidth / histogram.length;
+        
+        p.noStroke();
+        p.fill(...color);
+        
+        for (let i = 0; i < histogram.length; i++) {
+          const bin = histogram[i];
+          const height = (bin.count / maxFreq) * graphHeight;
+          p.rect(i * binWidth, graphHeight - height, binWidth, height);
+        }
+      }
+      
+      function drawPValueGraph() {
+        p.push();
+        p.translate(50, distributionGraphHeight + 20);
+        const graphWidth = p.width - 100;
+        const graphHeight = pValueGraphHeight - 40;
+        
+        // 軸の描画
+        p.stroke(0);
+        p.line(0, graphHeight, graphWidth, graphHeight); // x軸
+        p.line(0, 0, 0, graphHeight); // y軸
+        
+        // 有意水準の描画
+        p.stroke(255, 0, 0);
+        p.strokeWeight(2);
+        p.drawingContext.setLineDash([5, 5]);
+        p.line(0, graphHeight * 0.95, graphWidth, graphHeight * 0.95);
+        p.drawingContext.setLineDash([]);
+        p.strokeWeight(1);
+        
+        // p 値の描画
+        p.beginShape();
+        p.noFill();
+        p.stroke(128, 0, 128);
+        p.strokeWeight(2);
+        
+        const xScale = graphWidth / (maxSamples - 5);
+        const yScale = graphHeight;
+        
+        for (let i = 0; i < currentSampleSize - 4; i++) {
+          const x = i * xScale;
+          const y = graphHeight - (pValues[i] * yScale);
+          p.vertex(x, y);
+        }
+        p.endShape();
+        
+        // 現在の p 値をマーク
+        const currentPValue = pValues[currentSampleSize - 5];
+        const x = (currentSampleSize - 5) * xScale;
+        const y = graphHeight - (currentPValue * yScale);
+        
+        p.fill(128, 0, 128);
+        p.stroke(0);
+        p.strokeWeight(1);
+        p.ellipse(x, y, 8, 8);
+        
+        // 有意領域の描画
+        p.noStroke();
+        p.fill(255, 0, 0, 30);
+        p.rect(0, graphHeight * 0.95, graphWidth, graphHeight * 0.05);
+        
+        // 現在の p 値の注釈
+        p.textAlign(p.LEFT, p.BASELINE);
+        if (currentPValue < 0.05) {
+          p.fill(0, 128, 0);
+          p.text(`p=${currentPValue.toFixed(4)} < 0.05\n有意`, x + 10, y - 10);
+        } else {
+          p.fill(0);
+          p.text(`p=${currentPValue.toFixed(4)} > 0.05\n有意でない`, x + 10, y - 10);
+        }
+        
+        // x軸のラベル
+        p.strokeWeight(1);
+        p.fill(0);
+        p.textAlign(p.CENTER, p.TOP);
+        for (let i = 0; i <= maxSamples - 5; i += 10) {
+          p.text(i + 5, i * xScale, graphHeight + 10);
+        }
+        
+        // タイトルとラベル
+        p.textAlign(p.CENTER, p.TOP);
+        p.fill(0);
+        p.textSize(14);
+        p.text("p 値 vs サンプルサイズ", graphWidth / 2, -15);
+        
+        p.textAlign(p.CENTER, p.TOP);
+        p.text("サンプルサイズ", graphWidth / 2, graphHeight + 20);
+        
+        p.push();
+        p.translate(-30, graphHeight / 2);
+        p.rotate(-p.HALF_PI);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text("p 値", 0, 0);
+        p.pop();
+        
+        // 有意水準ラベルの描画
+        p.textAlign(p.RIGHT, p.BOTTOM);
+        p.fill(255, 0, 0);
+        p.text("α = 0.05", graphWidth, graphHeight * 0.94);
+        
+        p.pop();
+      }
+    };
+    
+    // P5 スケッチの開始
+    new p5(sketch);
+    
+    // UI イベントハンドラ
+    document.getElementById('sample-slider').addEventListener('input', function() {
+      currentSampleSize = parseInt(this.value);
+      updateUI();
+    });
+    
+    document.getElementById('reset-btn').addEventListener('click', function() {
+      generateData();
+      currentSampleSize = 5;
+      document.getElementById('sample-slider').value = 5;
+      stopAnimation();
+      updateUI();
+    });
+    
+    document.getElementById('play-btn').addEventListener('click', function() {
+      if (isPlaying) {
+        stopAnimation();
+        this.textContent = 'アニメーション再生';
+      } else {
+        startAnimation();
+        this.textContent = 'アニメーション一時停止';
+      }
+    });
+    
+    function updateUI() {
+      document.getElementById('sample-size').textContent = `サンプルサイズ: ${currentSampleSize}`;
+      
+      const pValue = pValues[currentSampleSize - 5];
+      const isSignificant = pValue < 0.05;
+      
+      document.getElementById('p-value').textContent = `現在の p 値: ${pValue.toFixed(4)}`;
+      document.getElementById('significance').textContent = 
+        `統計的有意差: ${isSignificant ? '有意 (p < 0.05)' : '有意でない (p > 0.05)'}`;
+      
+      if (isSignificant) {
+        document.getElementById('significance').style.color = 'green';
+      } else {
+        document.getElementById('significance').style.color = 'black';
+      }
+    }
+    
+    function startAnimation() {
+      if (isPlaying) return;
+      
+      isPlaying = true;
+      animationTimer = setInterval(() => {
+        if (currentSampleSize < maxSamples) {
+          currentSampleSize++;
+          document.getElementById('sample-slider').value = currentSampleSize;
+          updateUI();
+        } else {
+          stopAnimation();
+          document.getElementById('play-btn').textContent = 'アニメーション再生';
+        }
+      }, 200);
+    }
+    
+    function stopAnimation() {
+      if (animationTimer) {
+        clearInterval(animationTimer);
+      }
+      isPlaying = false;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>3Dオームの法則グラフ</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      display: block;
+    }
+    .info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">ドラッグして角度を変更</div>
+  <script>
+    function setup() {
+      createCanvas(800, 600, WEBGL);
+      angleMode(DEGREES);
+    }
+
+    function draw() {
+      background(240);
+      
+      // マウスの動きで回転を制御
+      let rotX = map(mouseY, 0, height, -45, 45);
+      let rotY = map(mouseX, 0, width, -45, 45);
+      
+      // カメラの位置と光源
+      orbitControl(3, 3);
+      directionalLight(255, 255, 255, 0, -1, -1);
+      ambientLight(100);
+      
+      // 座標軸を描画
+      push();
+      strokeWeight(2);
+      
+      // X軸 (電流: 0-10)
+      stroke(255, 0, 0);
+      line(0, 0, 0, 300, 0, 0);
+      textSize(16);
+      fill(255, 0, 0);
+      text("電流 (A)", 320, 10, 0);
+      
+      // Y軸 (抵抗: 0-20)
+      stroke(0, 255, 0);
+      line(0, 0, 0, 0, 300, 0);
+      fill(0, 255, 0);
+      text("抵抗 (Ω)", 10, 320, 0);
+      
+      // Z軸 (電圧: V=IR)
+      stroke(0, 0, 255);
+      line(0, 0, 0, 0, 0, 300);
+      fill(0, 0, 255);
+      text("電圧 (V)", 10, 10, 320);
+      pop();
+      
+      // グラフの原点を移動
+      translate(-150, -150, -100);
+      
+      // オームの法則に基づいた3Dグラフを描画
+      push();
+      // 頂点の間隔
+      let currentStep = 1;  // 電流
+      let resistanceStep = 2;  // 抵抗
+      
+      // 電流範囲: 0-10A
+      // 抵抗範囲: 0-20Ω
+      for (let i = 0; i < 10; i++) {
+        // 現在の電流値
+        let current = i * currentStep;
+
+        beginShape(TRIANGLE_STRIP);
+        for (let j = 0; j <= 10; j++) {
+          // 現在の抵抗値
+          let resistance = j * resistanceStep;
+
+          // 電圧 = 電流 * 抵抗
+          let voltage1 = current * resistance;
+          let voltage2 = (current + currentStep) * resistance;
+          
+          // 電圧に基づいた色
+          let maxVoltage = 10 * 20; // 最大電圧
+          let hue1 = map(voltage1, 0, maxVoltage, 240, 0); // 青から赤へ
+          let hue2 = map(voltage2, 0, maxVoltage, 240, 0);
+          
+          // 座標変換
+          let x1 = current * 30;
+          let y1 = resistance * 15;
+          let z1 = voltage1 * 3;
+          
+          let x2 = (current + currentStep) * 30;
+          let y2 = resistance * 15;
+          let z2 = voltage2 * 3;
+          
+          // 頂点の色を設定
+          colorMode(HSB, 360, 100, 100);
+          fill(hue1, 100, 100, 100);
+          vertex(x1, y1, z1);
+          fill(hue2, 100, 100, 100);
+          vertex(x2, y2, z2);
+        }
+        endShape();
+      }
+      pop();
+      
+      // グリッド線とメモリラベルを描画
+      push();
+      stroke(180);
+      strokeWeight(0.5);
+      
+      // X軸のグリッドとラベル
+      for (let i = 0; i <= 10; i++) {
+        let x = i * 30;
+        line(x, 0, 0, x, 300, 0);
+        if (i % 2 === 0) {
+          fill(255, 0, 0);
+          text(i.toString() + "A", x, -10, 0);
+        }
+      }
+      
+      // Y軸のグリッドとラベル
+      for (let i = 0; i <= 10; i++) {
+        let y = i * 30;
+        line(0, y, 0, 300, y, 0);
+        if (i % 2 === 0) {
+          fill(0, 255, 0);
+          text((i * 2).toString() + "Ω", -25, y, 0);
+        }
+      }
+      
+      // Z軸のラベル
+      for (let i = 0; i <= 6; i++) {
+        let z = i * 30;
+        fill(0, 0, 255);
+        text((i * 20).toString() + "V", -25, -10, z);
+      }
+      pop();
+      
+      // 凡例を表示
+      push();
+      translate(350, 150, 0);
+      fill(0);
+      textSize(14);
+      text("電圧 (V) の凡例", 0, -100);
+      
+      // 凡例のグラデーション
+      for (let i = 0; i < 200; i++) {
+        let hue = map(i, 0, 200, 240, 0);
+        let voltage = map(i, 0, 200, 0, 200);
+        colorMode(HSB, 360, 100, 100);
+        fill(hue, 100, 100);
+        rect(0, i - 80, 20, 1);
+        if (i % 50 === 0) {
+          fill(0);
+          text(voltage, 30, i - 80);
+        }
+      }
+      pop();
+      
+      // 軸の説明ラベルを表示
+      push();
+      translate(150, 0, 0);
+      textSize(18);
+      
+      fill(255, 0, 0);
+      text("電流 (I): 0〜10 A", -150, -180, 0);
+      
+      fill(0, 255, 0);
+      text("抵抗 (R): 0〜20 Ω", -150, -150, 0);
+      
+      fill(0, 0, 255);
+      text("電圧 (V): V = I × R", -150, -120, 0);
+      pop();
+      
+      // タイトルを表示
+      push();
+      translate(150, -50, 0);
+      fill(0);
+      textSize(24);
+      text("オームの法則 (V = I × R) 3Dグラフ", -100, -170);
+      pop();
+    }
+  </script>
+</body>
+</html>

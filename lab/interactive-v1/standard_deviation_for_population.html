@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>母標準偏差の可視化</title>
+  <!-- p5.js ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    #controls { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="prevStep">前のステップ</button>
+    <button id="nextStep">次のステップ</button>
+    <span>現在のステップ: <span id="stepCount">0</span></span>
+  </div>
+  <script>
+    // データの設定（やや小さめの５つのデータ）
+    let data = [3, 5, 2, 6, 4];
+    let n = data.length;
+    // 平均の計算
+    let mean = data.reduce((a, b) => a + b, 0) / n;
+    // 各データと平均の差、およびその２乗
+    let diffs = data.map(x => x - mean);
+    let squares = diffs.map(d => d * d);
+    // 差の２乗の和
+    let sumSquares = squares.reduce((a, b) => a + b, 0);
+    // 分散と母標準偏差
+    let variance = sumSquares / n;
+    let stdDev = Math.sqrt(variance);
+
+    // ステップ管理（0～6）
+    let step = 0;
+
+    // キャンバスの設定
+    let canvasWidth = 600;
+    let canvasHeight = 500;
+    let margin = 150;
+    let barWidth = 40;
+    let maxData = Math.max(...data);
+    // 各バー間の隙間
+    let spacing = (canvasWidth - 2 * margin - n * barWidth) / (n - 1);
+
+    function setup() {
+      let canvas = createCanvas(canvasWidth, canvasHeight);
+      canvas.parent(document.body);
+      textAlign(CENTER, CENTER);
+      textSize(14);
+      
+      // ボタンのイベント設定
+      document.getElementById('nextStep').addEventListener('click', () => {
+        if (step < 6) {
+          step++;
+          document.getElementById('stepCount').innerText = step;
+        }
+      });
+      document.getElementById('prevStep').addEventListener('click', () => {
+        if (step > 0) {
+          step--;
+          document.getElementById('stepCount').innerText = step;
+        }
+      });
+    }
+
+    function draw() {
+      background(240);
+      
+      // 1. バーグラフの描画（全ステップ共通）
+      for (let i = 0; i < n; i++) {
+        let x = margin + i * (barWidth + spacing);
+        // データ値に合わせたバーの高さ（グラフ領域は canvasHeight - 2*margin）
+        let barHeight = data[i] * ((canvasHeight - 2 * margin) / maxData);
+        fill(100, 150, 200);
+        rect(x, canvasHeight - margin - barHeight, barWidth, barHeight);
+        // データの数値表示（バー上部）
+        fill(0);
+        text(data[i], x + barWidth / 2, canvasHeight - margin - barHeight - 10);
+      }
+      
+      // 2. 平均を赤い水平線で描画（ステップ 1 以降）
+      if (step >= 1) {
+        let meanY = canvasHeight - margin - mean * ((canvasHeight - 2 * margin) / maxData);
+        stroke(255, 0, 0);
+        strokeWeight(2);
+        line(margin - 10, meanY, canvasWidth - margin + 10, meanY);
+        noStroke();
+        fill(255, 0, 0);
+        text("平均: " + nf(mean, 1, 2), margin - 30, meanY);
+      }
+      
+      // 3. 各バーの上端と平均との「差」を示す線（ステップ 2 以降）
+      if (step >= 2) {
+        stroke(0);
+        strokeWeight(1);
+        for (let i = 0; i < n; i++) {
+          let x = margin + i * (barWidth + spacing) + barWidth / 2;
+          let barTopY = canvasHeight - margin - data[i] * ((canvasHeight - 2 * margin) / maxData);
+          let meanY = canvasHeight - margin - mean * ((canvasHeight - 2 * margin) / maxData);
+          line(x, barTopY, x, meanY);
+        }
+        noStroke();
+      }
+      
+      // 4. バーの下に「差の２乗」を正方形として描画（ステップ 3 以降）
+      if (step >= 3) {
+        // 適度なスケール（ここでは 15px 単位で）
+        let scaleSq = 15;
+        for (let i = 0; i < n; i++) {
+          let side = squares[i] * scaleSq;
+          let x = margin + i * (barWidth + spacing) + barWidth / 2 - side / 2;
+          let y = canvasHeight - margin + 10;
+          fill(200, 100, 150);
+          rect(x, y, side, side);
+          fill(0);
+          text(nf(squares[i], 1, 2), x + side / 2, y + side / 2);
+        }
+      }
+      
+      // 5. ２乗差の和を大きな正方形で描画（ステップ 4 以降）
+      if (step >= 4) {
+        let scaleSq = 15;
+        let sumSide = sumSquares * scaleSq;
+        // キャンバス左上寄りに配置（右側余白内）
+        let x = 20;//canvasWidth - margin - sumSide;
+        let y = 20;// margin;
+        stroke(0);
+        strokeWeight(2);
+        noFill();
+        rect(x, y, sumSide, sumSide);
+        noStroke();
+        fill(0);
+        text("Σ(差^2) = " + sumSquares, x + sumSide / 2, y + sumSide / 2);
+      }
+      
+      // 6. ２乗和を n で割る様子の描画（ステップ 5 以降）
+      if (step >= 5) {
+        // 分数表示で分散を示す（例として右側に配置）
+        let fractionX = canvasWidth -100; // - margin - 100;
+        let fractionY = 100; // margin; // + 200;
+        fill(0);
+        text("分散 (10/5) = " + nf(variance, 1, 2), fractionX, fractionY - 20);
+      }
+      
+      // 7. ルートを取る様子と最終的な母標準偏差の出力（ステップ 6）
+      if (step >= 6) {
+        let resultX = canvasWidth -100; // - margin - 100;
+        let resultY = 120; // margin + 300;
+        fill(0);
+        text("母標準偏差  √(分散) = " + nf(stdDev, 1, 2), resultX, resultY);
+      }
+    }
+  </script>
+</body>
+</html>

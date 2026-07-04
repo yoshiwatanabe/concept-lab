@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>指数関数と対数関数のアニメーション (底の選択)</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden; /* スクロールバーを非表示にする */
+      display: flex; /* Flexbox レイアウトを使用 */
+      justify-content: center; /* 水平方向中央揃え */
+      align-items: center; /* 垂直方向中央揃え */
+      height: 100vh; /* ビューポートの高さに合わせる */
+      background-color: #f0f0f0; /* 背景色 */
+      flex-direction: column; /* ボタンとキャンバスを縦に並べる */
+    }
+    canvas {
+      border: 1px solid black;
+    }
+    #controls {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #equationDisplay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: sans-serif;
+      font-size: 14px;
+    }
+    input[type="range"] {
+      width: 200px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .radio-group {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <div class="radio-group">
+      <label><input type="radio" name="base" value="e" checked> e</label>
+      <label><input type="radio" name="base" value="2"> 2</label>
+      <label><input type="radio" name="base" value="10"> 10</label>
+    </div>
+    <input type="range" id="slider" min="-3" max="3" step="0.01" value="-3">
+  </div>
+  <div id="equationDisplay"></div>
+  <script>
+    let pointX;
+    let canvasWidth = 600;
+    let canvasHeight = 600;
+    let originX, originY;
+    let scaleFactor = 50; // スケールファクターを調整
+    let equationDiv;
+    let slider;
+    let selectedBase = 'e'; // 初期値
+
+    function setup() {
+      createCanvas(canvasWidth, canvasHeight);
+      originX = canvasWidth / 2;
+      originY = canvasHeight / 2;
+      pointX = -1; // 初期位置を安全な範囲に
+      equationDiv = document.getElementById('equationDisplay');
+
+      // スライダーの設定
+      slider = document.getElementById('slider');
+      slider.addEventListener('input', function() {
+        pointX = parseFloat(this.value); // 文字列から数値に変換
+      });
+
+      // ラジオボタンの設定
+      const radioButtons = document.querySelectorAll('input[name="base"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+          selectedBase = this.value;
+          pointX = -1;  // ベースが変わったら点のリセット
+          slider.value = pointX;
+        });
+      });
+    }
+
+    function draw() {
+      background(220);
+
+      // 軸の描画
+      drawAxes();
+
+      // y = x の描画
+      stroke(100);
+      line(0, canvasHeight, canvasWidth, 0);
+
+      // 指数関数の描画 (y = a^x) と対数関数 (y = log_a(x)) の描画
+      drawGraph(x => exp(x), x => log(x), color(255, 0, 0), 'e');      // 赤 (e)
+      drawGraph(x => pow(2, x), x => logBase(x, 2), color(0, 0, 255), '2'); // 青 (2)
+      drawGraph(x => pow(10, x), x => logBase(x, 10), color(0, 128, 0), '10'); // 緑 (10)
+
+      // 対応する点の描画と移動 (選択された底の場合のみ表示)
+      let yExp;
+      let pointColor;
+      if (selectedBase === 'e') {
+        yExp = exp(pointX);
+        pointColor = color(255, 0, 0);
+        displayEquations(pointX, yExp);
+      } else if (selectedBase === '2') {
+        yExp = pow(2, pointX);
+        pointColor = color(0, 0, 255);
+        displayEquations(pointX, yExp);
+      } else { // selectedBase === '10'
+        yExp = pow(10, pointX);
+        pointColor = color(0, 128, 0);
+        displayEquations(pointX, yExp);
+      }
+
+      if (selectedBase === 'e') {
+        drawPoint(pointX, yExp, color(255, 0, 0));
+        drawPoint(yExp, pointX, color(255, 0, 0)); // xとyを入れ替えて描画
+      }
+      else if (selectedBase === '2') {
+        drawPoint(pointX, yExp, color(0, 0, 255));
+        drawPoint(yExp, pointX, color(0, 0, 255)); // xとyを入れ替えて描画
+      }
+      else {
+           drawPoint(pointX, yExp, color(0, 128, 0));
+           drawPoint(yExp, pointX, color(0, 128, 0)); // xとyを入れ替えて描画
+      }
+
+      // スライダーによるpointXの制御
+      pointX = parseFloat(slider.value);
+    }
+
+    function drawAxes() {
+      stroke(0);
+      line(originX, 0, originX, canvasHeight); // Y軸
+      line(0, originY, canvasWidth, originY); // X軸
+
+      // 目盛りの描画 (X軸)
+      for (let i = -10; i <= 10; i++) {
+        let x = originX + i * scaleFactor;
+        line(x, originY - 5, x, originY + 5);
+        if (i !== 0) {
+          text(i, x - 5, originY + 20);
+        }
+      }
+
+      // 目盛りの描画 (Y軸)
+      for (let i = -10; i <= 10; i++) {
+        let y = originY - i * scaleFactor;
+        line(originX - 5, y, originX + 5, y);
+        if (i !== 0) {
+          text(-i, originX + 10, y + 5);
+        }
+      }
+    }
+
+    function drawGraph(expFunc, logFunc, graphColor, baseLabel) {
+      stroke(graphColor);
+      noFill();
+
+      // 指数関数を描画
+      beginShape();
+      for (let x = -10; x <= 10; x += 0.01) {
+        let y = expFunc(x);
+        vertex(originX + x * scaleFactor, originY - y * scaleFactor);
+      }
+      endShape();
+
+      // 対数関数を描画 (正の x 値のみ)
+      beginShape();
+      for (let x = 0.01; x <= 20; x += 0.01) {
+        let y = logFunc(x);
+        vertex(originX + x * scaleFactor, originY - y * scaleFactor);
+      }
+      endShape();
+    }
+
+    function drawPoint(x, y, pointColor) {
+      fill(pointColor);
+      noStroke();
+      let px = originX + x * scaleFactor;
+      let py = originY - y * scaleFactor;
+      ellipse(px, py, 10, 10);
+    }
+
+     function displayEquations(x, yExp) {
+      let base;
+      if (selectedBase === 'e') {
+        base = 'e';
+      } else if (selectedBase === '2') {
+        base = '2';
+      } else {
+        base = '10';
+      }
+
+      let logValue;
+      if (base === 'e') {
+          logValue = log(yExp).toFixed(2);
+      }
+      else if (base === '2') {
+          logValue = logBase(yExp, 2).toFixed(2);
+      }
+      else {
+          logValue = logBase(yExp, 10).toFixed(2);
+      }
+
+      equationDiv.innerHTML = `
+          x = ${x.toFixed(2)}<br>
+          ${base}<sup>x</sup> = ${yExp.toFixed(2)}<br>
+          log<sub>${base}</sub>(${yExp.toFixed(2)}) = ${logValue}
+      `;
+    }
+
+
+    function exp(x) {
+      return Math.exp(x);
+    }
+
+    function log(x) {
+      return Math.log(x);
+    }
+
+    function pow(base, exponent) {
+      return Math.pow(base, exponent);
+    }
+
+    function logBase(x, base) {
+      return Math.log(x) / Math.log(base);
+    }
+
+  </script>
+</body>
+</html>

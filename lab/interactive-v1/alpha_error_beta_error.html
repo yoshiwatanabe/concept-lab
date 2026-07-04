@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>αエラーとβエラーの可視化</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    let mu_null = 0;       // 帰無仮説の平均
+    let std_null = 1;      // 帰無仮説の標準偏差
+    let mu_alt = 1;        // 対立仮説の平均 (効果量)
+    let std_alt = 1;       // 対立仮説の標準偏差
+    let alpha = 0.05;      // 有意水準
+    let n_frames = 200;    // アニメーションフレーム数
+    let current_frame = 0; // 現在のフレーム
+
+    function setup() {
+      createCanvas(800, 600);
+      frameRate(30);
+    }
+
+    function drawGaussian(mean, sd, color) {
+      noFill();
+      stroke(color);
+      strokeWeight(2);
+      beginShape();
+      for (let x = -5; x <= 5; x += 0.05) {
+        let y = gaussian(x, mean, sd);
+        vertex(map(x, -5, 5, 0, width), height - y * 200); // スケール調整
+      }
+      endShape();
+    }
+
+    function gaussian(x, mean, sd) {
+      let exponent = -((x - mean) * (x - mean)) / (2 * sd * sd);
+      return (1 / (sd * sqrt(2 * PI))) * exp(exponent);
+    }
+
+    function draw() {
+      background(220);
+
+      let alpha_dynamic = 0.01 + (0.1 - 0.01) * (current_frame / n_frames);
+      let critical_value_left = jStat.normal.inv(alpha_dynamic / 2, mu_null, std_null);
+      let critical_value_right = jStat.normal.inv(1 - alpha_dynamic / 2, mu_null, std_null);
+
+
+      // 帰無仮説の分布 (青)
+      drawGaussian(mu_null, std_null, color(0, 0, 255));
+
+      // 対立仮説の分布 (赤)
+      drawGaussian(mu_alt, std_alt, color(255, 0, 0));
+
+      // クリティカル値の描画 (緑)
+      stroke(0, 255, 0);
+      strokeWeight(2);
+      line(map(critical_value_left, -5, 5, 0, width), 0, map(critical_value_left, -5, 5, 0, width), height);
+      line(map(critical_value_right, -5, 5, 0, width), 0, map(critical_value_right, -5, 5, 0, width), height);
+
+      // αエラーの領域 (青の半透明)
+      fill(0, 0, 255, 50);
+      noStroke();
+      beginShape();
+      for (let x = -5; x <= critical_value_left; x += 0.05) {
+        let y = gaussian(x, mu_null, std_null);
+        vertex(map(x, -5, 5, 0, width), height - y * 200);
+      }
+      vertex(map(critical_value_left, -5, 5, 0, width), height);
+      vertex(0, height);
+      endShape(CLOSE);
+
+      beginShape();
+      for (let x = critical_value_right; x <= 5; x += 0.05) {
+        let y = gaussian(x, mu_null, std_null);
+        vertex(map(x, -5, 5, 0, width), height - y * 200);
+      }
+      vertex(map(critical_value_right, -5, 5, 0, width), height);
+      vertex(width, height);
+      endShape(CLOSE);
+
+
+      // βエラーの領域 (赤の半透明)
+      fill(255, 0, 0, 50);
+      noStroke();
+      beginShape();
+      for (let x = critical_value_left; x <= critical_value_right; x += 0.05) {
+        let y = gaussian(x, mu_alt, std_alt);
+        vertex(map(x, -5, 5, 0, width), height - y * 200);
+      }
+      vertex(map(critical_value_left, -5, 5, 0, width), height);
+      vertex(map(critical_value_right, -5, 5, 0, width), height);
+      endShape(CLOSE);
+
+      // 説明テキスト
+      textSize(16);
+      fill(0);
+      textAlign(LEFT, TOP);
+      text("青: 帰無仮説 (H0)", 10, 10);
+      text("赤: 対立仮説 (H1)", 10, 30);
+      text("緑の線: 有意水準 (α)", 10, 50);
+      text("青色の領域: 第1種の過誤 (αエラー)", 10, 70);
+      text("赤色の領域: 第2種の過誤 (βエラー)", 10, 90);
+      text("α: " + alpha_dynamic.toFixed(2), 10, 110);
+
+      // フレーム更新
+      current_frame = (current_frame + 1) % n_frames;
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jstat/1.9.5/jstat.min.js"></script>
+</body>
+</html>

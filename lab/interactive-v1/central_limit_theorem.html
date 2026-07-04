@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中心極限定理シミュレーション</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .description {
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    label {
+      font-weight: bold;
+      min-width: 120px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .canvas-container {
+      display: flex;
+      justify-content: center;
+    }
+    .stats {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>中心極限定理シミュレーション</h1>
+    <p>Central Limit Theorem</p>
+    <div class="description">
+      <p>中心極限定理は「独立した確率変数の和または平均」が正規分布に近づくことを示す定理</p>
+      <p>シミュレーションでは一度のサンプルで０～１の間の実数をランダムに一様分布で返します。</p>
+      <p>実験１：サンプル数を１にして、試行回数を増やします。「和」や「平均」ではないので元の一様分布のままになり、正規分布の形にはならない</p>
+      <p>実験２：サンプル数を２にする。この場合２回サンプルを取った０～１の間の数値の合計を２で割ったもの（つまり平均）をグラフにとります。ほんの少し正規分布に近づきます</p>
+      <p>実験３：サンプル数をもっと増やす。「平均値」がより多くのサンプルから得られるので、中心極限定理に従い、正規分布に収束し始める。</p>
+      <p>実験４：サンプル数が１以外の時に、試行回数を増やす。データポイントが増えるので正規分布の形がより滑らかになる。</p>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="sample-size">サンプルサイズ:</label>
+        <select id="sample-size">
+          <option value="1">1 (元の分布)</option>
+          <option value="2">2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="30" selected>30</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="num-trials">試行回数:</label>
+        <input type="number" id="num-trials" value="1000" min="100" max="10000" step="100">
+      </div>
+      
+      <div class="control-group">
+        <button id="run-simulation">シミュレーション実行</button>
+        <button id="clear-results">クリア</button>
+      </div>
+    </div>
+    
+    <div class="canvas-container" id="canvas-container"></div>
+    
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <script>
+    let sketch = function(p) {
+      // 定数
+      const WIDTH = 800;
+      const HEIGHT = 500;
+      const MARGIN = 50;
+      const PLOT_WIDTH = WIDTH - 2 * MARGIN;
+      const PLOT_HEIGHT = HEIGHT - 2 * MARGIN;
+      const MIN_X = 0;
+      const MAX_X = 1;
+      const BIN_COUNT = 40;
+      
+      // 変数
+      let sampleSizeSelect;
+      let numTrialsInput;
+      let runButton;
+      let clearButton;
+      let statsDiv;
+      
+      let results = [];
+      let bins = Array(BIN_COUNT).fill(0);
+      let maxBinCount = 0;
+      let normalCurve = [];
+      
+      p.setup = function() {
+        p.createCanvas(WIDTH, HEIGHT);
+        
+        sampleSizeSelect = document.getElementById('sample-size');
+        numTrialsInput = document.getElementById('num-trials');
+        runButton = document.getElementById('run-simulation');
+        clearButton = document.getElementById('clear-results');
+        statsDiv = document.getElementById('stats');
+        
+        runButton.addEventListener('click', runSimulation);
+        clearButton.addEventListener('click', clearResults);
+        
+        precomputeNormalCurve();
+        drawEmptyHistogram();
+      };
+      
+      p.draw = function() {
+        // p5.jsの連続描画は使わないので、空のdraw関数を維持
+      };
+      
+      function runSimulation() {
+        clearResults();
+        
+        const sampleSize = parseInt(sampleSizeSelect.value);
+        const numTrials = parseInt(numTrialsInput.value);
+        
+        // シミュレーション実行
+        results = [];
+        for (let i = 0; i < numTrials; i++) {
+          let sum = 0;
+          for (let j = 0; j < sampleSize; j++) {
+            sum += p.random(); // 0から1の一様分布
+          }
+          const mean = sum / sampleSize;
+          results.push(mean);
+        }
+        
+        // ヒストグラム作成
+        bins = Array(BIN_COUNT).fill(0);
+        for (let result of results) {
+          const binIndex = Math.floor(result * BIN_COUNT);
+          if (binIndex >= 0 && binIndex < BIN_COUNT) {
+            bins[binIndex]++;
+          }
+        }
+        
+        maxBinCount = Math.max(...bins);
+        
+        // 統計量の計算
+        const mean = results.reduce((sum, val) => sum + val, 0) / results.length;
+        
+        const variance = results.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / results.length;
+        const stdDev = Math.sqrt(variance);
+        
+        statsDiv.innerHTML = `
+          <h3>統計情報</h3>
+          <p>サンプルサイズ: ${sampleSize}</p>
+          <p>試行回数: ${numTrials}</p>
+          <p>平均値: ${mean.toFixed(4)}</p>
+          <p>標準偏差: ${stdDev.toFixed(4)}</p>
+          <p>理論的な標準偏差: ${(1 / Math.sqrt(12 * sampleSize)).toFixed(4)} (一様分布の場合)</p>
+        `;
+        
+        drawHistogram();
+      }
+      
+      function clearResults() {
+        results = [];
+        bins = Array(BIN_COUNT).fill(0);
+        maxBinCount = 0;
+        statsDiv.innerHTML = '';
+        drawEmptyHistogram();
+      }
+      
+      function precomputeNormalCurve() {
+        normalCurve = [];
+        const mean = 0.5;
+        const stdDev = 1 / Math.sqrt(12); // 一様分布[0,1]の標準偏差
+        
+        for (let i = 0; i < BIN_COUNT; i++) {
+          const x = MIN_X + (i + 0.5) * (MAX_X - MIN_X) / BIN_COUNT;
+          const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * 
+                    Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+          normalCurve.push(y);
+        }
+      }
+      
+      function drawEmptyHistogram() {
+        p.background(255);
+        
+        // 軸
+        p.stroke(0);
+        p.strokeWeight(2);
+        p.line(MARGIN, HEIGHT - MARGIN, WIDTH - MARGIN, HEIGHT - MARGIN); // X軸
+        p.line(MARGIN, HEIGHT - MARGIN, MARGIN, MARGIN); // Y軸
+        
+        // X軸ラベル
+        p.noStroke();
+        p.fill(0);
+        p.textAlign(p.CENTER);
+        p.textSize(14);
+        p.text("サンプル平均", WIDTH / 2, HEIGHT - 10);
+        
+        // Y軸ラベル
+        p.push();
+        p.translate(15, HEIGHT / 2);
+        p.rotate(-p.HALF_PI);
+        p.text("頻度", 0, 0);
+        p.pop();
+        
+        // X軸の目盛り
+        for (let i = 0; i <= 10; i++) {
+          const x = MARGIN + (i / 10) * PLOT_WIDTH;
+          p.stroke(200);
+          p.line(x, MARGIN, x, HEIGHT - MARGIN);
+          p.noStroke();
+          p.text((i / 10).toFixed(1), x, HEIGHT - MARGIN + 20);
+        }
+      }
+      
+      function drawHistogram() {
+        drawEmptyHistogram();
+        
+        if (maxBinCount === 0) return;
+        
+        const binWidth = PLOT_WIDTH / BIN_COUNT;
+        
+        // ヒストグラム描画
+        p.noStroke();
+        p.fill(100, 150, 255, 200);
+        
+        for (let i = 0; i < BIN_COUNT; i++) {
+          const binHeight = (bins[i] / maxBinCount) * PLOT_HEIGHT;
+          const x = MARGIN + i * binWidth;
+          const y = HEIGHT - MARGIN - binHeight;
+          p.rect(x, y, binWidth, binHeight);
+        }
+        
+        // 理論正規分布を重ねる（サンプルサイズ > 1の場合）
+        if (parseInt(sampleSizeSelect.value) > 1) {
+          p.stroke(255, 0, 0);
+          p.strokeWeight(2);
+          p.noFill();
+          
+          const sampleSize = parseInt(sampleSizeSelect.value);
+          const stdDev = 1 / Math.sqrt(12 * sampleSize); // サンプル平均の標準偏差
+          const scale = maxBinCount * (MAX_X - MIN_X) / BIN_COUNT;
+          
+          p.beginShape();
+          for (let i = 0; i < BIN_COUNT; i++) {
+            const x = MARGIN + (i + 0.5) * binWidth;
+            const xVal = MIN_X + (i + 0.5) * (MAX_X - MIN_X) / BIN_COUNT;
+            
+            // 正規分布の確率密度関数
+            const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * 
+                      Math.exp(-0.5 * Math.pow((xVal - 0.5) / stdDev, 2));
+                      
+            const scaledY = y * scale;
+            p.vertex(x, HEIGHT - MARGIN - scaledY);
+          }
+          p.endShape();
+        }
+      }
+    };
+    
+    new p5(sketch, 'canvas-container');
+  </script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>統計的検出力（パワー）の可視化</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-top: 0;
+    }
+    .description {
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+    }
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="range"] {
+      flex: 1;
+    }
+    .value-display {
+      min-width: 60px;
+      text-align: center;
+      font-weight: bold;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #canvas-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .stats-display {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+    .info-box {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>統計的検出力（パワー）の可視化</h1>
+
+    <div class="description">
+      <p>このインタラクティブなシミュレーションは、サンプルサイズが統計的検出力にどのように影響するかを示します。統計的検出力とは、効果が実際に存在する場合にそれを検出する確率です。サンプルサイズが大きいほど、小さな効果でもより確実に検出できます。</p>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="sample-size">サンプルサイズ (n)</label>
+        <div class="slider-container">
+          <input type="range" id="sample-size" min="10" max="200" step="10" value="30">
+          <span class="value-display" id="sample-size-value">30</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="effect-size">効果量 (Cohen's d)</label>
+        <div class="slider-container">
+          <input type="range" id="effect-size" min="0.1" max="1" step="0.1" value="0.3">
+          <span class="value-display" id="effect-size-value">0.3</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="alpha">有意水準 (α)</label>
+        <div class="slider-container">
+          <input type="range" id="alpha" min="0.01" max="0.1" step="0.01" value="0.05">
+          <span class="value-display" id="alpha-value">0.05</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <button id="run-simulation">シミュレーション実行</button>
+      </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="stats-display" id="stats-display">
+      <strong>シミュレーション結果:</strong>
+      <div id="power-stats"></div>
+    </div>
+
+    <div class="info-box">
+      <h3>この可視化の解釈:</h3>
+      <ul>
+        <li><strong>左上:</strong> 2つのグループ間の平均の差のサンプリング分布を示します。サンプルサイズが大きいほど、これらの分布は狭くなります。</li>
+        <li><strong>右上:</strong> 複数のシミュレーションからのp値を示します。α（赤い線）を下回るp値の割合は、経験的な検出力を表します。</li>
+        <li><strong>下:</strong> 検出力がサンプルサイズとともにどのように増加するかを示します。0.8の水平破線は、一般的に推奨される最小検出力を表します。</li>
+      </ul>
+      <p><strong>重要なポイント:</strong> サンプルサイズが増加すると、統計的検出力が増加します。これは、真の効果を検出できる可能性が高くなることを意味します。サンプルサイズが小さいと、真の効果を見逃す可能性があります（第II種の誤り）。</p>
+    </div>
+  </div>
+
+  <script>
+    let sampleSizeSlider, effectSizeSlider, alphaSlider;
+    let sampleSizeValue, effectSizeValue, alphaValue;
+    let runButton;
+    let statsDisplay, powerStats;
+
+    // シミュレーションパラメータ
+    let sampleSize = 30;
+    let effectSize = 0.3;
+    let alpha = 0.05;
+    let numSimulations = 1000;
+    let sampleSizesForCurve = [10, 20, 30, 40, 50, 60, 80, 100, 120, 150, 200];
+
+    // 結果の保存
+    let pValues = [];
+    let powerBySampleSize = [];
+    let currentPower = 0;
+
+    // UI のセットアップ
+    document.addEventListener('DOMContentLoaded', function() {
+      sampleSizeSlider = document.getElementById('sample-size');
+      effectSizeSlider = document.getElementById('effect-size');
+      alphaSlider = document.getElementById('alpha');
+
+      sampleSizeValue = document.getElementById('sample-size-value');
+      effectSizeValue = document.getElementById('effect-size-value');
+      alphaValue = document.getElementById('alpha-value');
+
+      runButton = document.getElementById('run-simulation');
+
+      statsDisplay = document.getElementById('stats-display');
+      powerStats = document.getElementById('power-stats');
+
+      // イベントリスナーの設定
+      sampleSizeSlider.addEventListener('input', function() {
+        sampleSize = parseInt(this.value);
+        sampleSizeValue.textContent = sampleSize;
+        calculatePowerCurve(); // サンプルサイズを変更したら検出力曲線も更新
+        runSimulation(); // サンプルサイズ変更時に自動でシミュレーション実行
+      });
+
+      effectSizeSlider.addEventListener('input', function() {
+        effectSize = parseFloat(this.value);
+        effectSizeValue.textContent = effectSize.toFixed(1);
+        calculatePowerCurve(); // 効果量を変えたら検出力曲線も更新
+        runSimulation(); // 効果量変更時に自動でシミュレーション実行
+      });
+
+      alphaSlider.addEventListener('input', function() {
+        alpha = parseFloat(this.value);
+        alphaValue.textContent = alpha.toFixed(2);
+        calculatePowerCurve(); // 有意水準を変えたら検出力曲線も更新
+        runSimulation(); // 有意水準変更時に自動でシミュレーション実行
+      });
+
+      runButton.addEventListener('click', runSimulation);
+
+      // 初期シミュレーション
+      calculatePowerCurve();
+      runSimulation();
+    });
+
+    function runSimulation() {
+      pValues = [];
+
+      // シミュレーションの実行
+      for (let i = 0; i < numSimulations; i++) {
+        const group1 = generateSampleData(0, 1, sampleSize);
+        const group2 = generateSampleData(effectSize, 1, sampleSize);
+
+        const pValue = twoSampleTTest(group1, group2);
+        pValues.push(pValue);
+      }
+
+      // 検出力の計算
+      currentPower = pValues.filter(p => p < alpha).length / numSimulations;
+
+      // 統計情報の表示を更新
+      powerStats.innerHTML = `
+        <p>サンプルサイズ: ${sampleSize}</p>
+        <p>効果量: ${effectSize.toFixed(2)}</p>
+        <p>有意水準 (α): ${alpha.toFixed(2)}</p>
+        <p>経験的検出力 (1-β): ${currentPower.toFixed(3)} (${(currentPower*100).toFixed(1)}%)</p>
+        <p>理論的検出力: ${calculateTheoreticalPower(sampleSize, effectSize, alpha).toFixed(3)}</p>
+      `;
+
+      // p5.js スケッチが自動的に draw() で更新される
+    }
+
+    function calculatePowerCurve() {
+      powerBySampleSize = [];
+
+      for (const n of sampleSizesForCurve) {
+        const power = calculateTheoreticalPower(n, effectSize, alpha);
+        powerBySampleSize.push({ n, power });
+      }
+    }
+
+    function generateSampleData(mean, stdDev, size) {
+      // Box-Muller変換による正規分布
+      const data = [];
+      for (let i = 0; i < size; i++) {
+        let u1 = Math.random();
+        let u2 = Math.random();
+
+        let z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        data.push(mean + stdDev * z);
+      }
+      return data;
+    }
+
+    function twoSampleTTest(sample1, sample2) {
+      const n1 = sample1.length;
+      const n2 = sample2.length;
+
+      const mean1 = sample1.reduce((sum, val) => sum + val, 0) / n1;
+      const mean2 = sample2.reduce((sum, val) => sum + val, 0) / n2;
+
+      const variance1 = sample1.reduce((sum, val) => sum + Math.pow(val - mean1, 2), 0) / (n1 - 1);
+      const variance2 = sample2.reduce((sum, val) => sum + Math.pow(val - mean2, 2), 0) / (n2 - 1);
+
+      const pooledVariance = ((n1 - 1) * variance1 + (n2 - 1) * variance2) / (n1 + n2 - 2);
+
+      const t = (mean1 - mean2) / Math.sqrt(pooledVariance * (1/n1 + 1/n2));
+
+      // t分布のp値の近似
+      return 2 * (1 - cumulativeStandardNormal(Math.abs(t)));
+    }
+
+    function cumulativeStandardNormal(x) {
+      // 標準正規分布の累積分布関数の近似
+      const b1 = 0.319381530;
+      const b2 = -0.356563782;
+      const b3 = 1.781477937;
+      const b4 = -1.821255978;
+      const b5 = 1.330274429;
+      const p = 0.2316419;
+      const c = 0.39894228;
+
+      if (x >= 0) {
+        const t = 1.0 / (1.0 + p * x);
+        return 1.0 - c * Math.exp(-x * x / 2) * t * (t * (t * (t * (t * b5 + b4) + b3) + b2) + b1);
+      } else {
+        const t = 1.0 / (1.0 - p * x);
+        return c * Math.exp(-x * x / 2) * t * (t * (t * (t * (t * b5 + b4) + b3) + b2) + b1);
+      }
+    }
+
+    function calculateTheoreticalPower(n, d, a) {
+      // 非心度パラメータの計算
+      const ncp = d * Math.sqrt(n / 2);
+
+      // 臨界値
+      const criticalT = approximateInverseCumulativeT(1 - a/2, 2*n - 2);
+
+      // 検出力の計算
+      const power = 1 - cumulativeNoncentralT(criticalT, 2*n - 2, ncp);
+
+      return power;
+    }
+
+    function approximateInverseCumulativeT(p, df) {
+      // 臨界t値の簡単な近似
+      if (p === 0.975 && df > 10) return 1.96;
+      if (p === 0.95 && df > 10) return 1.645;
+      if (p === 0.995 && df > 10) return 2.576;
+
+      // その他の値には、この大まかな近似を使用
+      const z = Math.sqrt(-2 * Math.log(1 - p));
+      return z - 0.5/df;
+    }
+
+    function cumulativeNoncentralT(x, df, ncp) {
+      // これは非心t分布の非常に大まかな近似です
+      // より正確な計算には、より複雑な数値的方法が必要です
+      const z = x - ncp;
+      return cumulativeStandardNormal(z);
+    }
+
+    // p5.js スケッチ
+    new p5(function(p) {
+      p.setup = function() {
+        const canvas = p.createCanvas(900, 600);
+        canvas.parent('canvas-container');
+      };
+
+      p.draw = function() {
+        p.background(255);
+
+        // レイアウトの寸法を定義
+        const margin = 50;
+        const plotWidth = (p.width - 3 * margin) / 2;
+        const plotHeight = (p.height - 3 * margin) / 2;
+
+        // 分布プロットの描画（左上）
+        p.push();
+        p.translate(margin, margin);
+        drawDistributionPlot(p, plotWidth, plotHeight);
+        p.pop();
+
+        // p値ヒストグラムの描画（右上）
+        p.push();
+        p.translate(2 * margin + plotWidth, margin);
+        drawPValueHistogram(p, plotWidth, plotHeight);
+        p.pop();
+
+        // 検出力曲線の描画（下）
+        p.push();
+        p.translate(margin, 2 * margin + plotHeight);
+        drawPowerCurvePlot(p, p.width - 2 * margin, plotHeight);
+        p.pop();
+      };
+
+      function drawDistributionPlot(p, width, height) {
+        // 軸の描画
+        p.stroke(0);
+        p.line(0, height, width, height); // x軸
+        p.line(0, 0, 0, height); // y軸
+
+        // プロットのタイトルとラベル
+        p.noStroke();
+        p.fill(0);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(14);
+        p.text("サンプル平均の差の分布", width/2, -25);
+        p.text("平均の差", width/2, height + 25);
+        p.push();
+        p.translate(-25, height/2);
+        p.rotate(-p.HALF_PI);
+        p.text("確率密度", 0, 0);
+        p.pop();
+
+        // 標準誤差の計算
+        const se = 1 / Math.sqrt(sampleSize / 2);
+
+        // 帰無分布の描画（0を中心とする）
+        p.noFill();
+        p.stroke(30, 144, 255); // 青
+        p.beginShape();
+        for (let x = -3; x <= 3; x += 0.1) {
+          const xPos = p.map(x, -3, 3, 0, width);
+          const y = normalPDF(x, 0, se);
+          const yPos = p.map(y, 0, 0.8, height, 0);
+          p.vertex(xPos, yPos);
+        }
+        p.endShape();
+
+        // 対立分布の描画（効果量をを中心とする）
+        p.stroke(255, 99, 71); // 赤
+        p.beginShape();
+        for (let x = -3; x <= 3; x += 0.1) {
+          const xPos = p.map(x, -3, 3, 0, width);
+          const y = normalPDF(x, effectSize, se);
+          const yPos = p.map(y, 0, 0.8, height, 0);
+          p.vertex(xPos, yPos);
+        }
+        p.endShape();
+
+        // 臨界値の描画
+        const criticalValue = approximateInverseCumulativeT(1 - alpha/2, 2 * sampleSize - 2) * se;
+
+        p.stroke(100);
+        p.line(p.map(criticalValue, -3, 3, 0, width), 0, p.map(criticalValue, -3, 3, 0, width), height);
+        p.line(p.map(-criticalValue, -3, 3, 0, width), 0, p.map(-criticalValue, -3, 3, 0, width), height);
+
+        // 凡例の描画
+        p.noStroke();
+        p.fill(30, 144, 255);
+        p.rect(width - 150, 20, 15, 15);
+        p.fill(0);
+        p.textAlign(p.LEFT);
+        p.text("帰無仮説 (μ = 0)", width - 130, 27);
+
+        p.fill(255, 99, 71);
+        p.rect(width - 150, 45, 15, 15);
+        p.fill(0);
+        p.text(`対立仮説 (μ = ${effectSize.toFixed(2)})`, width - 130, 52);
+
+        p.fill(100);
+        p.text(`臨界値 (α = ${alpha.toFixed(2)})`, width - 130, 77);
+      }
+
+      function drawPValueHistogram(p, width, height) {
+        if (pValues.length === 0) return;
+
+        // 軸の描画
+        p.stroke(0);
+        p.line(0, height, width, height); // x軸
+        p.line(0, 0, 0, height); // y軸
+
+        // プロットのタイトルとラベル
+        p.noStroke();
+        p.fill(0);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(14);
+        p.text("p値の分布", width/2, -25);
+        p.text("p値", width/2, height + 25);
+        p.push();
+        p.translate(-25, height/2);
+        p.rotate(-p.HALF_PI);
+        p.text("頻度", 0, 0);
+        p.pop();
+
+        // ヒストグラムデータの作成
+        const bins = 20;
+        const histData = Array(bins).fill(0);
+
+        for (const pValue of pValues) {
+          const binIndex = Math.min(Math.floor(pValue * bins), bins - 1);
+          histData[binIndex]++;
+        }
+
+        // スケーリングのための最大頻度の検索
+        const maxFreq = Math.max(...histData);
+
+        // バーの描画
+        const barWidth = width / bins;
+
+        for (let i = 0; i < bins; i++) {
+          const x = i * barWidth;
+          const barHeight = (histData[i] / maxFreq) * height;
+
+          if (i * (1/bins) < alpha) {
+            p.fill(255, 200, 200); // 有意なp値には薄い赤
+          } else {
+            p.fill(200, 200, 255); // 有意でないp値には薄い青
+          }
+
+          p.noStroke();
+          p.rect(x, height - barHeight, barWidth, barHeight);
+
+          p.stroke(0, 50);
+          p.noFill();
+          p.rect(x, height - barHeight, barWidth, barHeight);
+        }
+
+        // α閾値の線の描画
+        p.stroke(255, 0, 0);
+        p.line(alpha * width, 0, alpha * width, height);
+
+        // 検出力情報の表示
+        p.noStroke();
+        p.fill(0);
+        p.text(`経験的検出力: ${currentPower.toFixed(3)}`, width/2, 30);
+        p.text(`(${pValues.filter(p => p < alpha).length} / ${pValues.length} テストが有意)`, width/2, 50);
+      }
+
+      function drawPowerCurvePlot(p, width, height) {
+        // 軸の描画
+        p.stroke(0);
+        p.line(0, height, width, height); // x軸
+        p.line(0, 0, 0, height); // y軸
+
+        // プロットのタイトルとラベル
+        p.noStroke();
+        p.fill(0);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(14);
+        p.text("統計的検出力 vs. サンプルサイズ", width/2, -25);
+        p.text("サンプルサイズ", width/2, height + 25);
+        p.push();
+        p.translate(-25, height/2);
+        p.rotate(-p.HALF_PI);
+        p.text("検出力 (1-β)", 0, 0);
+        p.pop();
+
+        // 目標検出力線 (0.8)
+        p.stroke(100);
+        p.setLineDash([5, 5]);
+        const targetPowerY = p.map(0.8, 0, 1, height, 0);
+        p.line(0, targetPowerY, width, targetPowerY);
+        p.noStroke();
+        p.fill(100);
+        p.text("目標検出力 (0.8)", width - 80, targetPowerY - 10);
+        p.setLineDash([]);
+
+        // 軸の目盛りの描画
+        p.stroke(0);
+        p.fill(0);
+        p.textAlign(p.CENTER, p.TOP);
+
+        // Y軸の目盛り
+        for (let i = 0; i <= 1; i += 0.2) {
+          const y = p.map(i, 0, 1, height, 0);
+          p.line(-5, y, 0, y);
+          p.noStroke();
+          p.text(i.toFixed(1), -15, y);
+          p.stroke(0);
+        }
+
+        // X軸の目盛り
+        for (let n = 0; n <= 200; n += 50) {
+          const x = p.map(n, 0, 200, 0, width);
+          p.line(x, height, x, height + 5);
+          p.noStroke();
+          p.text(n, x, height + 10);
+          p.stroke(0);
+        }
+
+        // 検出力曲線の計算と描画
+        if (powerBySampleSize.length > 0) {
+          p.noFill();
+          p.stroke(0, 0, 255);
+          p.strokeWeight(2);
+          p.beginShape();
+
+          for (const point of powerBySampleSize) {
+            const x = p.map(point.n, 0, 200, 0, width);
+            const y = p.map(point.power, 0, 1, height, 0);
+            p.vertex(x, y);
+          }
+
+          p.endShape();
+
+          // 現在のサンプルサイズの点の描画
+          const currentX = p.map(sampleSize, 0, 200, 0, width);
+          const theoreticalPower = calculateTheoreticalPower(sampleSize, effectSize, alpha);
+          const theoreticalY = p.map(theoreticalPower, 0, 1, height, 0);
+
+          // 理論的検出力の点
+          p.fill(0, 0, 255);
+          p.noStroke();
+          p.ellipse(currentX, theoreticalY, 8, 8);
+
+          // 経験的検出力の点
+          const empiricalY = p.map(currentPower, 0, 1, height, 0);
+          p.fill(255, 0, 0);
+          p.ellipse(currentX, empiricalY, 8, 8);
+
+          // 凡例
+          p.fill(0, 0, 255);
+          p.rect(width - 150, 20, 15, 15);
+          p.fill(0);
+          p.textAlign(p.LEFT);
+          p.text("理論的検出力", width - 130, 27);
+
+          p.fill(255, 0, 0);
+          p.rect(width - 150, 45, 15, 15);
+          p.fill(0);
+          p.text("経験的検出力", width - 130, 52);
+        }
+      }
+
+      function normalPDF(x, mean, stdDev) {
+        return (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
+               Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+      }
+
+      // ダッシュのサポート
+      p.setLineDash = function(list) {
+          if (p.drawingContext.setLineDash) {
+              p.drawingContext.setLineDash(list);
+          } else {
+              console.log("line dash not supported");
+          }
+      }
+
+    });
+  </script>
+</body>
+</html>

@@ -12,13 +12,13 @@ Prerequisite/related edges are orchestrator best-guesses; refined at review time
 | ☐ | math/polynomial_functions.ipynb | polynomial-functions | multiplication-division |
 | ☐ | math/function-degrees.ipynb | function-degrees | polynomial-functions |
 | ☐ | math/function-significant-terms.ipynb | function-significant-terms | function-degrees |
-| ◐ | math/trigonometric_functions.ipynb | trigonometric-functions | polynomial-functions |
+| ☑ | math/trigonometric_functions.ipynb | trigonometric-functions | polynomial-functions |
 | ☐ | math/exponential_logrithmic.ipynb | exponential-logarithmic | polynomial-functions |
 | ☐ | math/eulers_number.ipynb | eulers-number | exponential-logarithmic |
 | ☐ | math/logistic_function.ipynb | logistic-function | eulers-number |
 | ☐ | math/logit_function.ipynb | logit-function | exponential-logarithmic |
 | ☐ | math/logistic_and_logit_functions.ipynb | logistic-and-logit | logistic-function, logit-function |
-| ◐ | math/calculus_differentiation_integration.ipynb | calculus-differentiation-integration | function-degrees, trigonometric-functions? |
+| ☑ | math/calculus_differentiation_integration.ipynb | calculus-differentiation-integration | function-degrees, trigonometric-functions? |
 | ☐ | math/calculus_applications.ipynb | calculus-applications | calculus-differentiation-integration |
 
 ## stats
@@ -33,7 +33,7 @@ Prerequisite/related edges are orchestrator best-guesses; refined at review time
 | ☐ | stats/least_squires_method.ipynb | least-squares-method | standard-deviation |
 | ☐ | stats/null_hypothesis.ipynb | null-hypothesis | standard-error |
 | ☐ | stats/statistical_hypotheis_test.ipynb | hypothesis-testing | null-hypothesis |
-| ◐ | stats/statistical_significance.ipynb | statistical-significance | hypothesis-testing |
+| ☑ | stats/statistical_significance.ipynb | statistical-significance | hypothesis-testing |
 | ☐ | stats/alpha_error_beta_error.ipynb | alpha-beta-errors | statistical-significance |
 | ☐ | stats/statistical_power.ipynb | statistical-power | alpha-beta-errors |
 | ☐ | stats/z-test.ipynb | z-test | hypothesis-testing, standard-error |

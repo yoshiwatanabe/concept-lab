@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>最小二乗法の可視化</title>
+    <!-- p5.js ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <style>
+      body { font-family: sans-serif; }
+      .controls { margin: 10px 0; }
+    </style>
+  </head>
+  <body>
+    <h2>最小二乗法の直感的な可視化</h2>
+    <div class="controls">
+      <label for="slope">傾き (a): </label>
+      <input type="range" id="slope" min="-2" max="2" step="0.01" value="1">
+      <span id="slopeVal">1</span>
+    </div>
+    <div class="controls">
+      <label for="intercept">切片 (b): </label>
+      <input type="range" id="intercept" min="-200" max="200" step="1" value="50">
+      <span id="interceptVal">50</span>
+    </div>
+    <p>
+      ※各データポイントに対して、予測値との差を辺の長さとする正方形を描画。<br>
+      右下の正方形は、全残差二乗和（＝残差平方根の正方形）を示しています。
+    </p>
+
+    <script>
+      let dataPoints = [];
+      let slopeSlider, interceptSlider;
+      let a = 1, b = 50;
+      const margin = 50;
+      const canvasWidth = 600;
+      const canvasHeight = 600;
+
+      function setup() {
+        createCanvas(canvasWidth, canvasHeight);
+
+        // 固定データポイント（例）
+        dataPoints = [
+          {x: 100, y: 130},
+          {x: 150, y: 160},
+          {x: 200, y: 190},
+          {x: 250, y: 240},
+          {x: 300, y: 250},
+          {x: 350, y: 300},
+          {x: 400, y: 340},
+          {x: 450, y: 360},
+          {x: 500, y: 420}
+        ];
+
+        // HTML のスライダーを p5.js 側で取得
+        slopeSlider = select('#slope');
+        interceptSlider = select('#intercept');
+
+        slopeSlider.input(updateParams);
+        interceptSlider.input(updateParams);
+      }
+
+      function updateParams() {
+        a = parseFloat(slopeSlider.value());
+        b = parseFloat(interceptSlider.value());
+        select('#slopeVal').html(a);
+        select('#interceptVal').html(b);
+      }
+
+      function draw() {
+        background(255);
+
+        // グラフの枠：座標軸を描画
+        stroke(0);
+        line(margin, margin, margin, canvasHeight - margin); // y軸
+        line(margin, canvasHeight - margin, canvasWidth - margin, canvasHeight - margin); // x軸
+
+        let totalSquaredError = 0;
+
+        // 各データポイントに対する描画
+        for (let pt of dataPoints) {
+          // データポイントを描く
+          fill(0);
+          ellipse(pt.x, canvasHeight - pt.y, 8, 8);
+
+          // 現在の直線による予測値
+          let predictedY = a * pt.x + b;
+          // 残差（実際の y - 予測 y）
+          let residual = pt.y - predictedY;
+          let absResidual = abs(residual);
+          totalSquaredError += residual * residual;
+
+          // 予測値と実測値を結ぶ線（残差線）を描く
+          stroke(150, 150, 255);
+          line(pt.x, canvasHeight - pt.y, pt.x, canvasHeight - predictedY);
+
+          // 各データの残差を正方形として描画
+          // 正方形の辺の長さ＝ |残差|
+          // もし実測値が予測値より上なら、正方形の下辺を予測値に合わせ、下の場合は上辺を予測値に合わせる
+          noFill();
+          stroke(255, 0, 0);
+          let sqSize = absResidual;
+          let sqX = pt.x - sqSize / 2;
+          let sqY;
+          if (residual >= 0) {
+            // 点が直線より上の場合
+            sqY = canvasHeight - predictedY - sqSize;
+          } else {
+            // 点が直線より下の場合
+            sqY = canvasHeight - predictedY;
+          }
+          rect(sqX, sqY, sqSize, sqSize);
+        }
+
+        // 現在の直線（フィッティングライン）を描画
+        stroke(0, 150, 0);
+        let x1 = margin;
+        let y1 = a * x1 + b;
+        let x2 = canvasWidth - margin;
+        let y2 = a * x2 + b;
+        line(x1, canvasHeight - y1, x2, canvasHeight - y2);
+
+        // 全データの残差二乗和の平方根に相当する正方形を描画
+        let totalErrorSide = sqrt(totalSquaredError);
+        fill(0, 150, 0, 50);
+        noStroke();
+        // 左下付近に描く（グラフ内）
+        rect(margin, margin, totalErrorSide, totalErrorSide);
+
+        // 情報テキストを表示
+        fill(0);
+        textSize(16);
+        text("合計残差二乗: " + nf(totalSquaredError, 1, 2), margin, margin - 10);
+        text("残差平方根: " + nf(totalErrorSide, 1, 2), margin + 200, margin - 10);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>単位円アニメーション (スライダー制御、ラジアン表示)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    canvas { display: block; margin: auto; }
+    #controls {
+      text-align: center;
+      margin-top: 10px;
+    }
+    input[type="range"] {
+      width: 300px; /* スライダーの幅を調整 */
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <input type="range" id="angleSlider" min="0" max="360" value="0" step="0.1">
+  </div>
+
+<script>
+let angle = 0;
+let angleSlider;
+
+function setup() {
+  // キャンバスサイズは400x400 (単位円のみ表示)
+  createCanvas(400, 400);
+
+  // スライダーの設定
+  angleSlider = document.getElementById('angleSlider');
+  angleSlider.addEventListener('input', () => {
+    angle = radians(angleSlider.value); // スライダーの値を角度に変換
+  });
+}
+
+function draw() {
+  background(255);
+
+  // 単位円の設定
+  const cx = 200, cy = 200, r = 150;
+
+  // 単位円を描く
+  stroke(0);
+  noFill();
+  ellipse(cx, cy, r * 2);
+
+  // 現在の角度における円周上の点（角度はラジアン）
+  let x = cx + r * cos(angle);
+  let y = cy - r * sin(angle); // y座標を反転
+
+  // 単位円の中心から円周上の点へ赤い線（半径）を描く
+  stroke(255, 0, 0);
+  line(cx, cy, x, y);
+
+  // 円周上の点から水平線（単位円の中心の高さ）への青い線を描く
+  stroke(0, 0, 255);
+  line(x, y, x, cy);
+
+  // 円周上の点から垂直線（単位円の中心の左右）への青い線を描く
+  stroke(0, 255, 0);
+  line(x, y, cx, y);
+
+  // 円周上の動く点を描く
+  fill(0);
+  noStroke();
+  ellipse(x, y, 8, 8);
+
+  // 投影された点を描く(x, cy)
+  fill(0, 0, 255);
+  ellipse(x, cy, 8, 8);
+
+  // 投影された点を描く(cx, y)
+  fill(0, 255, 0);
+  ellipse(cx, y, 8, 8);
+
+  // Tangentの計算
+  let tangent = tan(angle);
+  // Tangentの始点
+  let tx0 = cx + r;
+  let ty0 = cy;
+
+  let tx1 = cx + r;
+  let ty1 = cy - r * tangent; //タンジェントの計算は修正不要
+  //Tangent の線
+  stroke(200, 100, 0);
+  line(tx0, ty0, tx1, ty1);
+
+  //Tanget の点
+  fill(200, 100, 0);
+  ellipse(tx1, ty1, 8, 8);
+
+
+  // 現在の角度（度数法）とSineの値をテキスト表示
+  fill(0);
+  noStroke();
+  textSize(16);
+  let angleDegrees = nf(degrees(angle), 1, 2);
+  let angleRadians = nf(angle, 1, 2); //ラジアンを整形
+  text("角度: " + angleDegrees + "° (" + angleRadians + " rad)", 10, 20);
+  text("Sine: " + nf(sin(angle), 1, 2), 10, 40);
+  text("Cosine: " + nf(cos(angle), 1, 2), 10, 60);
+  text("Tangent: " + nf(tan(angle), 1, 2), 10, 80);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Penguin Species Animation with Axis Ticks</title>
+  <!-- Load the p5.js library from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script>
+    let penguins = []; // Array to hold our simulated penguin data
+    let speciesList = ["Adelie", "Gentoo", "Chinstrap"];
+    // Define the proportions (averages) for each species (values between 0 and 1)
+    let speciesAverages = {
+      "Adelie": 0.44,
+      "Gentoo": 0.36,
+      "Chinstrap": 0.20
+    };
+    // Define counts for our simulation based on the above percentages (assume total = 100)
+    let speciesCounts = {
+      "Adelie": 44,
+      "Gentoo": 36,
+      "Chinstrap": 20
+    };
+
+    let step = 0;  // Tracks how many species averages have been drawn
+
+    function setup() {
+      createCanvas(800, 400);
+      
+      // Build the penguins array according to speciesCounts
+      for (let species of speciesList) {
+        let count = speciesCounts[species];
+        for (let i = 0; i < count; i++) {
+          penguins.push({ species: species });
+        }
+      }
+      // Shuffle so the species are randomly distributed along the x-axis
+      shuffle(penguins, true);
+    }
+
+    function draw() {
+      background(255);
+      
+      // Draw Y-axis tick marks and labels for 0, 0.5, and 1.0
+      drawYAxis();
+      
+      // Draw the bars representing individual penguins.
+      // The x-axis is divided among all penguins; each bar is drawn full-height.
+      let barWidth = width / penguins.length;
+      for (let i = 0; i < penguins.length; i++) {
+        let x = i * barWidth;
+        let col = getSpeciesColor(penguins[i].species);
+        fill(col);
+        noStroke();
+        // All bars represent a value of 1, so they span the full height.
+        rect(x, 0, barWidth, height);
+      }
+      
+      // Draw dotted lines for species averages that have been activated.
+      // Our data values range from 0 to 1, where 1 is mapped to y = 0 (top) and 0 to y = height (bottom).
+      for (let i = 0; i < step; i++) {
+        let species = speciesList[i];
+        let avg = speciesAverages[species];  // e.g., 0.35 for Adelie
+        // Map the average value to the canvas y-coordinate.
+        let y = map(1 - avg, 0, 1, 0, height);
+        let col = getSpeciesColor(species);
+        stroke(col);
+        strokeWeight(2);
+        drawDottedLine(0, y, width, y, 5, 5);
+        // Label the dotted line with the numerical average value.
+        noStroke();
+        fill(color(0, 0, 0));
+        textSize(16);
+        textAlign(RIGHT, CENTER);
+        text(avg, width - 10, y);
+        text(species, width -100, y);
+      }
+      
+      // Display instructions.
+      fill(0);
+      textSize(16);
+      textAlign(LEFT, TOP);
+      text("Press RIGHT arrow to show next species average line.", 10, 10);
+      if (step >= speciesList.length) {
+        text("All species shown. Press RIGHT arrow to restart.", 10, 30);
+      }
+    }
+
+    // Draws Y-axis tick marks and labels at 0, 0.5, and 1.0 along the left side.
+    function drawYAxis() {
+      stroke(0);
+      fill(0);
+      textSize(14);
+      textAlign(RIGHT, CENTER);
+      // Tick values: 0, 0.5, 1.0. Note: value 1 maps to y=0 and 0 maps to y=height.
+      let ticks = [0, 0.5, 1.0];
+      for (let i = 0; i < ticks.length; i++) {
+        let value = ticks[i];
+        // Map value to canvas coordinate
+        let y = map(1 - value, 0, 1, 0, height);
+        // Draw tick line (10px length)
+        line(0, y, 10, y);
+        // Draw the tick label slightly to the left of the tick mark.
+        text(value, 40, y);
+      }
+    }
+
+    // Handle key presses to progress through the steps or restart the animation.
+    function keyPressed() {
+      if (keyCode === RIGHT_ARROW) {
+        if (step >= speciesList.length) {
+          step = 0;
+        } else {
+          step++;
+        }
+      }
+    }
+
+    // Helper function to return a color for a given species.
+    function getSpeciesColor(species) {
+      if (species === "Adelie") {
+        return color(255, 100, 100); // reddish
+      } else if (species === "Gentoo") {
+        return color(100, 255, 100); // greenish
+      } else if (species === "Chinstrap") {
+        return color(100, 100, 255); // blueish
+      } else {
+        return color(200);
+      }
+    }
+
+    // Helper function to draw a dotted horizontal line from (x1,y1) to (x2,y2).
+    // dashLength and gapLength control the lengths of dashes and gaps.
+    function drawDottedLine(x1, y1, x2, y2, dashLength, gapLength) {
+      let distance = dist(x1, y1, x2, y2);
+      let dashCount = distance / (dashLength + gapLength);
+      let dx = (x2 - x1) / dashCount;
+      let dy = (y2 - y1) / dashCount;
+      
+      for (let i = 0; i < dashCount; i++) {
+        let startX = x1 + i * dx;
+        let startY = y1 + i * dy;
+        line(
+          startX, 
+          startY, 
+          startX + dx * (dashLength / (dashLength + gapLength)), 
+          startY + dy * (dashLength / (dashLength + gapLength))
+        );
+      }
+    }
+  </script>
+</body>
+</html>

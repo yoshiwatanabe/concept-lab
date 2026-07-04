@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>t分布とカイ2乗分布の自由度による可視化</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .controls {
+      margin: 20px;
+      width: 80%;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    label {
+      width: 120px;
+    }
+    input[type="range"] {
+      flex-grow: 1;
+      margin: 0 10px;
+    }
+    .value-display {
+      width: 30px;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>t分布とカイ2乗分布の自由度による変化</h1>
+    <div class="controls">
+      <div class="slider-container">
+        <label for="dofSlider">自由度:</label>
+        <input type="range" id="dofSlider" min="1" max="30" value="5" step="1">
+        <div class="value-display" id="dofValue">5</div>
+      </div>
+      <div class="slider-container">
+        <label for="animSpeedSlider">アニメーション速度:</label>
+        <input type="range" id="animSpeedSlider" min="0" max="10" value="3" step="1">
+        <div class="value-display" id="animSpeedValue">3</div>
+      </div>
+      <button id="toggleAnimButton">アニメーション開始</button>
+    </div>
+  </div>
+  
+  <script>
+    let dof = 5; // 自由度
+    let animSpeed = 3; // アニメーション速度
+    let isAnimating = false; // アニメーション状態
+    
+    function setup() {
+      const canvas = createCanvas(800, 600);
+      canvas.parent(document.querySelector('.container'));
+      textFont('Arial');
+      frameRate(30);
+      
+      // スライダーの値を表示する
+      const dofSlider = document.getElementById('dofSlider');
+      const dofValue = document.getElementById('dofValue');
+      dofSlider.addEventListener('input', function() {
+        dofValue.textContent = this.value;
+        dof = parseInt(this.value);
+      });
+      
+      const animSpeedSlider = document.getElementById('animSpeedSlider');
+      const animSpeedValue = document.getElementById('animSpeedValue');
+      animSpeedSlider.addEventListener('input', function() {
+        animSpeedValue.textContent = this.value;
+        animSpeed = parseInt(this.value);
+      });
+      
+      // アニメーションの開始/停止ボタン
+      const toggleAnimButton = document.getElementById('toggleAnimButton');
+      toggleAnimButton.addEventListener('click', function() {
+        isAnimating = !isAnimating;
+        this.textContent = isAnimating ? 'アニメーション停止' : 'アニメーション開始';
+        console.log("Animation state changed to: " + isAnimating);
+      });
+    }
+    
+    // t分布のPDF
+    function tPdf(x, df) {
+      // t分布の確率密度関数
+      const numerator = gamma((df + 1) / 2);
+      const denominator = Math.sqrt(df * Math.PI) * gamma(df / 2);
+      const base = 1 + (x * x) / df;
+      return (numerator / denominator) * Math.pow(base, -((df + 1) / 2));
+    }
+    
+    // カイ2乗分布のPDF
+    function chiSquaredPdf(x, df) {
+      if (x <= 0) return 0;
+      const power = (df / 2) - 1;
+      const expo = -x / 2;
+      const denom = Math.pow(2, df / 2) * gamma(df / 2);
+      return Math.pow(x, power) * Math.exp(expo) / denom;
+    }
+    
+    // ガンマ関数（近似計算）
+    function gamma(z) {
+      // ガンマ関数の近似計算
+      const p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+                 771.32342877765313, -176.61502916214059, 12.507343278686905,
+                 -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+      
+      if (z < 0.5) {
+        return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+      } else {
+        z -= 1;
+        let x = p[0];
+        for (let i = 1; i < p.length; i++) {
+          x += p[i] / (z + i);
+        }
+        const t = z + p.length - 1.5;
+        return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+      }
+    }
+    
+    // 描画関数
+    function draw() {
+      background(250);
+      
+      // アニメーション処理
+      if (isAnimating) {
+        dof += 0.05 * animSpeed;
+        if (dof > 30) dof = 1;
+        document.getElementById('dofSlider').value = Math.round(dof);
+        document.getElementById('dofValue').textContent = Math.round(dof);
+      }
+      
+      // 表示パラメータ
+      const margin = 50;
+      const width1 = width - 2 * margin;
+      const height1 = (height - 3 * margin) / 2;
+      
+      // t分布の描画
+      drawDistribution(
+        margin, margin, width1, height1,
+        x => tPdf(x, dof),
+        -6, 6, 0, 0.5,
+        `t分布 (自由度 = ${Math.round(dof)})`,
+        color(30, 144, 255)
+      );
+      
+      // カイ2乗分布の描画
+      drawDistribution(
+        margin, 2 * margin + height1, width1, height1,
+        x => chiSquaredPdf(x, dof),
+        0, 20, 0, 0.3,
+        `カイ2乗分布 (自由度 = ${Math.round(dof)})`,
+        color(220, 20, 60)
+      );
+      
+      // 凡例表示
+      drawLegend();
+    }
+    
+    // 分布を描画する関数
+    function drawDistribution(x, y, w, h, pdfFunc, xMin, xMax, yMin, yMax, title, col) {
+      push();
+      translate(x, y);
+      
+      // 背景と枠
+      fill(255);
+      stroke(200);
+      rect(0, 0, w, h);
+      
+      // 軸の描画
+      stroke(0);
+      line(0, h, w, h); // x軸
+      line(0, 0, 0, h); // y軸
+      
+      // x軸目盛り
+      const xStep = w / (xMax - xMin);
+      for (let i = xMin; i <= xMax; i += (xMax - xMin) / 10) {
+        const xPos = (i - xMin) * xStep;
+        line(xPos, h, xPos, h - 5);
+        textAlign(CENTER);
+        fill(0);
+        text(i.toFixed(1), xPos, h + 15);
+      }
+      
+      // y軸目盛り
+      const yStep = h / (yMax - yMin);
+      for (let i = 0; i <= yMax; i += yMax / 5) {
+        const yPos = h - (i - yMin) * yStep;
+        line(0, yPos, 5, yPos);
+        textAlign(RIGHT);
+        fill(0);
+        text(i.toFixed(2), -5, yPos + 5);
+      }
+      
+      // タイトル
+      textAlign(CENTER);
+      fill(0);
+      textSize(16);
+      text(title, w / 2, -10);
+      
+      // 分布曲線の描画
+      noFill();
+      stroke(col);
+      strokeWeight(2);
+      beginShape();
+      for (let i = 0; i <= w; i++) {
+        const x = xMin + (i / w) * (xMax - xMin);
+        const y = pdfFunc(x);
+        const scaledY = h - (y - yMin) * yStep;
+        if (scaledY <= h && scaledY >= 0) {
+          vertex(i, scaledY);
+        }
+      }
+      endShape();
+      
+      // 標準正規分布との比較（t分布の場合）
+      if (title.includes('t分布')) {
+        stroke(100, 100, 100, 150);
+        strokeWeight(1);
+        beginShape();
+        for (let i = 0; i <= w; i++) {
+          const x = xMin + (i / w) * (xMax - xMin);
+          // 標準正規分布のPDF
+          const y = Math.exp(-x * x / 2) / Math.sqrt(2 * Math.PI);
+          const scaledY = h - (y - yMin) * yStep;
+          if (scaledY <= h && scaledY >= 0) {
+            vertex(i, scaledY);
+          }
+        }
+        endShape();
+      }
+      
+      pop();
+    }
+    
+    // 凡例の描画
+    function drawLegend() {
+      const legendX = 650;
+      const legendY = 30;
+      const legendW = 140;
+      const legendH = 60;
+      
+      fill(255, 255, 255, 200);
+      stroke(200);
+      rect(legendX, legendY, legendW, legendH);
+      
+      // t分布の凡例
+      stroke(30, 144, 255);
+      strokeWeight(2);
+      line(legendX + 10, legendY + 15, legendX + 30, legendY + 15);
+      fill(0);
+      noStroke();
+      textAlign(LEFT);
+      text("t分布", legendX + 35, legendY + 20);
+      
+      // 標準正規分布の凡例
+      stroke(100, 100, 100, 150);
+      strokeWeight(1);
+      line(legendX + 10, legendY + 35, legendX + 30, legendY + 35);
+      fill(0);
+      noStroke();
+      textAlign(LEFT);
+      text("標準正規分布", legendX + 35, legendY + 40);
+      
+      // カイ2乗分布の凡例
+      stroke(220, 20, 60);
+      strokeWeight(2);
+      line(legendX + 10, legendY + 55, legendX + 30, legendY + 55);
+      fill(0);
+      noStroke();
+      textAlign(LEFT);
+      text("カイ2乗分布", legendX + 35, legendY + 60);
+    }
+  </script>
+</body>
+</html>

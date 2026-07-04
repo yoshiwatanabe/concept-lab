@@ -1,0 +1,65 @@
+---
+title_ja: 統計的有意差
+title_en: Statistical Significance
+domain: stats
+level: 3
+prerequisites: ["hypothesis-testing"]
+related: ["alpha-beta-errors"]
+viz: ["interactive"]
+status: migrated
+source: "lab/stats/statistical_significance.ipynb"
+---
+
+import SignificanceExplorer from "../../../components/viz/SignificanceExplorer";
+
+{/* 元のノートブック (lab/stats/statistical_significance.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   単一行区切りのリスト項目は MDX の箇条書きとして構造化したのみで、文言は一切変更していない。 */}
+
+視覚的に統計学の概念を理解するための を使ったアニメーションなどの視覚化のアイデアを実装してください。(ラベル等は英語で） Python + データセットを用いた視覚化 Pythonの matplotlib や seaborn、scipy.stats を用いた視覚的なシミュレーションのアイデアを整理します。 (1) 統計学的優位差（Statistical Significance） アイデア: 平均の差のヒストグラムとp値 データセット: 2つのグループ（例：新薬グループ vs. 旧薬グループ）の効果データ 可視化: seaborn で2つのグループのヒストグラムを重ねてプロット scipy.stats.ttest_ind() で t検定 を行い、p値を表示 p値の変化を可視化するアニメーション（データ数が増えるとp値が小さくなる様子を示す） ポイント 有意水準（α = 0.05）より小さいと「統計学的に優位差あり」と判断する過程を示す
+
+**データの視覚化:**
+
+- 旧薬グループと新薬グループの効果データを正規分布でシミュレーション
+- サンプルサイズが徐々に増加するにつれて、分布の形状が変化する様子を表示
+- 各グループの平均値を点線で表示
+
+**p値の可視化:**
+
+- 下部のグラフでサンプルサイズの増加に伴うp値の変化を追跡
+- 有意水準（α = 0.05）を赤い点線で表示
+- 統計的に有意な領域を赤色の半透明長方形でハイライト
+
+**統計的有意差の解釈:**
+
+- p値が0.05未満になった時点で「統計的に有意」と判定
+- p値の状態に応じて、タイトルの色やテキストアノテーションが変化
+
+{/* 可視化: V1 では matplotlib FuncAnimation で「サンプルサイズを増やすとヒストグラムが分離し、p値が下がっていく」様子を
+   GIF として書き出していた（lab/stats/statistical_significance.gif）。ここではスライダーで n と effect size を
+   自由に動かせるインタラクティブな版に置き換える。 */}
+
+<SignificanceExplorer client:load />
+
+Sample size (n) と true effect size のスライダーを動かすと、上段のヒストグラムが再描画され、下段の p-value trend
+上に現在の n が点で示される。p 値が有意水準 α = 0.05 を下回ると、バッジが green の "Significant" に切り替わる。
+
+## 式
+
+Welch's t-test（等分散を仮定しない t 検定）の統計量と自由度：
+
+$$
+t = \frac{\bar{X}_1 - \bar{X}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}
+\qquad
+\nu \approx \frac{\left(\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}\right)^2}{\dfrac{(s_1^2/n_1)^2}{n_1 - 1} + \dfrac{(s_2^2/n_2)^2}{n_2 - 1}}
+$$
+
+両側 p 値は自由度 $\nu$ の Student's t 分布の累積分布関数（CDF）から求まる：
+
+$$
+p = 2 \left(1 - F_\nu(|t|)\right)
+$$
+
+$p < \alpha$（本ページでは $\alpha = 0.05$）のとき、観測された差は「統計的に有意」と判断される。
+
+前提となる仮説検定（hypothesis testing）の枠組みの上に成り立つ概念であり、判定を誤る可能性については
+第一種の過誤・第二種の過誤（alpha/beta errors、ページ上部の Related を参照）と合わせて理解するとよい。
