@@ -1,0 +1,30 @@
+---
+interface Props {
+  status: "stub" | "draft" | "migrated" | "polished";
+}
+
+const { status } = Astro.props;
+---
+
+<span class={`status status-${status}`}>{status}</span>
+
+<style>
+  .status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--badge);
+    color: var(--fg);
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .status-draft {
+    background: var(--accent-soft);
+  }
+</style>

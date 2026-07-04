@@ -1,0 +1,66 @@
+---
+import StatusBadge from "./StatusBadge.astro";
+
+interface Props {
+  href: string;
+  title_ja: string;
+  title_en: string;
+  level: number;
+  status: "stub" | "draft" | "migrated" | "polished";
+}
+
+const { href, title_ja, title_en, level, status } = Astro.props;
+---
+
+<a class="concept-card" href={href}>
+  <span>
+    <strong>{title_ja}</strong>
+    <span>{title_en}</span>
+  </span>
+  <span class="meta">
+    <span>Level {level}</span>
+    <StatusBadge status={status} />
+  </span>
+</a>
+
+<style>
+  .concept-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .concept-card strong,
+  .concept-card span span {
+    display: block;
+  }
+
+  .concept-card span span {
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 560px) {
+    .concept-card,
+    .meta {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

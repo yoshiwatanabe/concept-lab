@@ -1,0 +1,65 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const domains = ["math", "stats", "ml", "physics", "electricity", "language"] as const;
+const concepts = await getCollection("concepts");
+const base = import.meta.env.BASE_URL;
+const counts = new Map(domains.map((domain) => [domain, 0]));
+
+for (const concept of concepts) {
+  counts.set(concept.data.domain, (counts.get(concept.data.domain) ?? 0) + 1);
+}
+---
+
+<BaseLayout title="concept-lab">
+  <section>
+    <h1>concept-lab</h1>
+    <p class="muted">A personal concept catalog for learning math, stats, ML, and neighboring topics.</p>
+  </section>
+
+  <section>
+    <h2>Domains</h2>
+    <ul class="domain-list">
+      {domains.map((domain) => (
+        <li>
+          <a href={`${base}${domain}/`}>
+            <span>{domain}</span>
+            <strong>{counts.get(domain) ?? 0}</strong>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .domain-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 0;
+    margin: 24px 0 0;
+    list-style: none;
+  }
+
+  .domain-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 68px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--fg);
+    text-decoration: none;
+    text-transform: capitalize;
+  }
+
+  .domain-list strong {
+    color: var(--accent);
+    font-size: 1.35rem;
+  }
+</style>

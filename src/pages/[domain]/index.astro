@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ConceptCard from "../../components/ConceptCard.astro";
+
+export async function getStaticPaths() {
+  const domains = ["math", "stats", "ml", "physics", "electricity", "language"];
+  return domains.map((domain) => ({ params: { domain } }));
+}
+
+const { domain } = Astro.params;
+const base = import.meta.env.BASE_URL;
+const concepts = (await getCollection("concepts"))
+  .filter((concept) => concept.data.domain === domain)
+  .sort((a, b) => a.data.level - b.data.level || a.data.title_en.localeCompare(b.data.title_en));
+---
+
+<BaseLayout title={`${domain} | concept-lab`}>
+  <p class="muted"><a href={base}>Domains</a> / {domain}</p>
+  <h1>{domain}</h1>
+
+  {concepts.length > 0 ? (
+    <ul class="list">
+      {concepts.map((concept) => (
+        <li>
+          <ConceptCard
+            href={`${base}concepts/${concept.id}/`}
+            title_ja={concept.data.title_ja}
+            title_en={concept.data.title_en}
+            level={concept.data.level}
+            status={concept.data.status}
+          />
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="muted">No concepts yet.</p>
+  )}
+</BaseLayout>
+
+<style>
+  h1 {
+    text-transform: capitalize;
+  }
+</style>

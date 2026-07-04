@@ -1,0 +1,118 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import StatusBadge from "../components/StatusBadge.astro";
+
+interface ConceptRef {
+  slug: string;
+  label?: string;
+}
+
+interface Props {
+  title_ja: string;
+  title_en: string;
+  domain: string;
+  level: number;
+  prerequisites: ConceptRef[];
+  related: ConceptRef[];
+  status: "stub" | "draft" | "migrated" | "polished";
+}
+
+const { title_ja, title_en, domain, level, prerequisites, related, status } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const domainHref = `${base}${domain}/`;
+const conceptHref = (slug: string) => `${base}concepts/${slug}/`;
+---
+
+<BaseLayout title={`${title_en} | concept-lab`}>
+  <article class="concept">
+    <header class="concept-header">
+      <p class="crumb"><a href={domainHref}>{domain}</a> · Level {level}</p>
+      <div class="title-row">
+        <h1>{title_ja}</h1>
+        <StatusBadge status={status} />
+      </div>
+      <p class="subtitle">{title_en}</p>
+      {(prerequisites.length > 0 || related.length > 0) && (
+        <div class="concept-links">
+          {prerequisites.length > 0 && (
+            <p>
+              <strong>Prerequisites:</strong>
+              {prerequisites.map((item, index) => (
+                <>
+                  {" "}
+                  <a href={conceptHref(item.slug)}>{item.label ?? item.slug}</a>{index < prerequisites.length - 1 ? "," : ""}
+                </>
+              ))}
+            </p>
+          )}
+          {related.length > 0 && (
+            <p>
+              <strong>Related:</strong>
+              {related.map((item, index) => (
+                <>
+                  {" "}
+                  <a href={conceptHref(item.slug)}>{item.label ?? item.slug}</a>{index < related.length - 1 ? "," : ""}
+                </>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
+    </header>
+    <div class="concept-body">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .concept-header {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+
+  .crumb,
+  .subtitle,
+  .concept-links {
+    color: var(--muted);
+  }
+
+  .crumb {
+    margin-bottom: 8px;
+    text-transform: capitalize;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .concept-links {
+    margin-top: 18px;
+    font-size: 0.95rem;
+  }
+
+  .concept-links p {
+    margin-bottom: 0.35rem;
+  }
+
+  .concept-body :global(.function-plot) {
+    margin-top: 28px;
+  }
+
+  @media (max-width: 560px) {
+    .title-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+</style>

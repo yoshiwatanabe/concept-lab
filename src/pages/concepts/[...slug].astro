@@ -1,0 +1,28 @@
+---
+import { getCollection, render } from "astro:content";
+import ConceptLayout from "../../layouts/ConceptLayout.astro";
+
+export async function getStaticPaths() {
+  const concepts = await getCollection("concepts");
+  return concepts.map((concept) => ({
+    params: { slug: concept.id },
+    props: { concept }
+  }));
+}
+
+const { concept } = Astro.props;
+const { Content } = await render(concept);
+const refFor = (slug: string) => ({ slug });
+---
+
+<ConceptLayout
+  title_ja={concept.data.title_ja}
+  title_en={concept.data.title_en}
+  domain={concept.data.domain}
+  level={concept.data.level}
+  prerequisites={concept.data.prerequisites.map(refFor)}
+  related={concept.data.related.map(refFor)}
+  status={concept.data.status}
+>
+  <Content />
+</ConceptLayout>

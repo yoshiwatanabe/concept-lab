@@ -1,0 +1,148 @@
+---
+import "katex/dist/katex.min.css";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary">
+        <a class="brand" href={base}>concept-lab</a>
+        <div class="nav-links">
+          <a href={`${base}graph/`}>Graph</a>
+          <a href={`${base}next/`}>Next</a>
+        </div>
+      </nav>
+    </header>
+    <main class="page">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf8;
+    --fg: #1f2428;
+    --muted: #647079;
+    --line: #d9dee3;
+    --panel: #ffffff;
+    --accent: #0f766e;
+    --accent-soft: #d9f0ec;
+    --badge: #eceff3;
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141617;
+      --fg: #eef1f2;
+      --muted: #aab3b9;
+      --line: #343a40;
+      --panel: #1d2022;
+      --accent: #5eead4;
+      --accent-soft: #173f3a;
+      --badge: #2b3035;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .site-header {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav,
+  .page {
+    width: min(100% - 32px, 760px);
+    margin-inline: auto;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+  }
+
+  .brand {
+    color: var(--fg);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 14px;
+    font-size: 0.95rem;
+  }
+
+  .page {
+    padding-block: 42px 72px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+  }
+
+  h1 {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 8vw, 3.25rem);
+  }
+
+  h2 {
+    margin-top: 40px;
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin: 0 0 1rem;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  .list {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+    margin: 24px 0 0;
+    list-style: none;
+  }
+</style>
