@@ -1,8 +1,182 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const domains = ["math", "stats", "ml", "physics", "electricity", "language"] as const;
+const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const toShortId = (id: string) => id.split("/").at(-1) ?? id;
+const concepts = (await getCollection("concepts")).map((concept) => ({
+  id: toShortId(concept.id),
+  slug: concept.id,
+  title_ja: concept.data.title_ja,
+  title_en: concept.data.title_en,
+  domain: concept.data.domain,
+  status: concept.data.status,
+  prerequisites: concept.data.prerequisites,
+  level: concept.data.level
+}));
+const byId = new Map(concepts.map((concept) => [concept.id, concept]));
+const readyStatuses = new Set(["migrated", "polished"]);
+const prereqIsReady = (id: string) => {
+  const concept = byId.get(id);
+  return concept ? readyStatuses.has(concept.status) : false;
+};
+const frontier = concepts
+  .filter((concept) => concept.status === "stub")
+  .filter((concept) => concept.prerequisites.every(prereqIsReady))
+  .sort((a, b) => a.level - b.level || a.title_en.localeCompare(b.title_en));
+const byDomain = new Map(domains.map((domain) => [domain, frontier.filter((concept) => concept.domain === domain)]));
+const inProgress = concepts
+  .filter((concept) => concept.status === "draft")
+  .sort((a, b) => a.domain.localeCompare(b.domain) || a.level - b.level || a.title_en.localeCompare(b.title_en));
+const curationTodos = concepts
+  .filter((concept) => concept.status === "stub")
+  .map((concept) => ({
+    ...concept,
+    missing: concept.prerequisites.filter((prerequisite) => !byId.has(prerequisite))
+  }))
+  .filter((concept) => concept.missing.length > 0)
+  .sort((a, b) => a.domain.localeCompare(b.domain) || a.title_en.localeCompare(b.title_en));
 ---
 
 <BaseLayout title="Next | concept-lab">
-  <h1>Next</h1>
-  <p class="muted">Coming soon.</p>
+  <p class="muted"><a href={base}>Domains</a> / Next</p>
+  <h1>次に学ぶと良い概念</h1>
+  <p class="muted">Stub concepts whose prerequisites are all migrated or polished.</p>
+
+  {domains.map((domain) => {
+    const items = byDomain.get(domain) ?? [];
+    return items.length > 0 ? (
+      <section class="next-domain">
+        <h2>{domain}</h2>
+        <ul class="next-list">
+          {items.map((concept) => (
+            <li class="next-item">
+              <div>
+                <a class="next-title" href={`${base}concepts/${concept.slug}/`}>{concept.title_ja}</a>
+                <span class="next-en">{concept.title_en}</span>
+              </div>
+              <div class="next-meta">
+                <span>Level {concept.level}</span>
+                <span>
+                  Prerequisites:{" "}
+                  {concept.prerequisites.length > 0 ? (
+                    concept.prerequisites.map((prerequisite, index) => {
+                      const target = byId.get(prerequisite);
+                      return target ? (
+                        <>
+                          {index > 0 ? ", " : ""}
+                          <a href={`${base}concepts/${target.slug}/`}>{target.title_ja}</a>
+                        </>
+                      ) : (
+                        <>
+                          {index > 0 ? ", " : ""}
+                          <span class="missing">{prerequisite}</span>
+                        </>
+                      );
+                    })
+                  ) : (
+                    <span>none</span>
+                  )}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+  })}
+
+  <section>
+    <h2>In Progress</h2>
+    {inProgress.length > 0 ? (
+      <ul class="next-list">
+        {inProgress.map((concept) => (
+          <li class="next-item">
+            <div>
+              <a class="next-title" href={`${base}concepts/${concept.slug}/`}>{concept.title_ja}</a>
+              <span class="next-en">{concept.title_en}</span>
+            </div>
+            <div class="next-meta">
+              <span>{concept.domain}</span>
+              <span>Level {concept.level}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="muted">No draft concepts right now.</p>
+    )}
+  </section>
+
+  <section>
+    <h2>Curation TODO</h2>
+    {curationTodos.length > 0 ? (
+      <ul class="next-list">
+        {curationTodos.map((concept) => (
+          <li class="next-item">
+            <div>
+              <a class="next-title" href={`${base}concepts/${concept.slug}/`}>{concept.title_ja}</a>
+              <span class="next-en">{concept.title_en}</span>
+            </div>
+            <div class="next-meta">
+              <span>Missing prerequisites: {concept.missing.join(", ")}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="muted">No missing prerequisite references found.</p>
+    )}
+  </section>
 </BaseLayout>
+
+<style>
+  .next-domain h2 {
+    text-transform: capitalize;
+  }
+
+  .next-list {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+    margin: 16px 0 0;
+    list-style: none;
+  }
+
+  .next-item {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .next-title,
+  .next-en {
+    display: block;
+  }
+
+  .next-title {
+    width: fit-content;
+    color: var(--fg);
+    font-weight: 700;
+  }
+
+  .next-en,
+  .next-meta {
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .next-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .missing {
+    color: var(--fg);
+  }
+</style>

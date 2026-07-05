@@ -1,8 +1,137 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import GraphView, { type GraphConcept } from "../components/GraphView";
+
+const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const toShortId = (id: string) => id.split("/").at(-1) ?? id;
+const concepts: GraphConcept[] = (await getCollection("concepts"))
+  .map((concept) => ({
+    id: toShortId(concept.id),
+    slug: concept.id,
+    title_ja: concept.data.title_ja,
+    title_en: concept.data.title_en,
+    domain: concept.data.domain,
+    status: concept.data.status,
+    prerequisites: concept.data.prerequisites,
+    related: concept.data.related,
+    level: concept.data.level
+  }))
+  .sort((a, b) => a.domain.localeCompare(b.domain) || a.level - b.level || a.title_en.localeCompare(b.title_en));
 ---
 
 <BaseLayout title="Graph | concept-lab">
-  <h1>Graph</h1>
-  <p class="muted">Coming soon.</p>
+  <section class="graph-page">
+    <p class="muted"><a href={base}>Domains</a> / Graph</p>
+    <h1>Knowledge Map</h1>
+    <p class="muted">Prerequisite edges point from what you need first toward what comes next. Related edges are dashed.</p>
+    <GraphView concepts={concepts} baseUrl={base} client:load />
+  </section>
 </BaseLayout>
+
+<style is:global>
+  .graph-page {
+    display: grid;
+    gap: 12px;
+  }
+
+  .graph-view {
+    margin-top: 12px;
+  }
+
+  .graph-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .legend-item,
+  .legend-rule {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  }
+
+  .graph-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1200 / 760;
+    min-height: 520px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    touch-action: none;
+  }
+
+  .graph-bg {
+    fill: var(--panel);
+  }
+
+  .link {
+    stroke: color-mix(in srgb, var(--muted) 72%, transparent);
+    stroke-width: 1.6;
+  }
+
+  .link.related {
+    stroke-dasharray: 6 6;
+    stroke-width: 1.25;
+  }
+
+  #graph-arrow path {
+    fill: color-mix(in srgb, var(--muted) 78%, transparent);
+  }
+
+  .node {
+    cursor: grab;
+  }
+
+  .node:active {
+    cursor: grabbing;
+  }
+
+  .node.is-open {
+    cursor: pointer;
+  }
+
+  .node-title,
+  .node-subtitle {
+    paint-order: stroke;
+    stroke: var(--panel);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    fill: var(--fg);
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  .node-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .node-subtitle {
+    fill: var(--muted);
+    font-size: 11px;
+  }
+
+  .node circle {
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.12));
+  }
+
+  @media (max-width: 720px) {
+    .graph-canvas {
+      min-height: 460px;
+    }
+  }
+</style>

@@ -12,7 +12,15 @@ export async function getStaticPaths() {
 
 const { concept } = Astro.props;
 const { Content } = await render(concept);
-const refFor = (slug: string) => ({ slug });
+const toShortId = (id: string) => id.split("/").at(-1) ?? id;
+const conceptIndex = new Map((await getCollection("concepts")).map((item) => [toShortId(item.id), item]));
+const refFor = (slug: string) => {
+  const target = conceptIndex.get(slug);
+  return {
+    slug: target?.id ?? slug,
+    label: target?.data.title_ja ?? slug
+  };
+};
 ---
 
 <ConceptLayout
