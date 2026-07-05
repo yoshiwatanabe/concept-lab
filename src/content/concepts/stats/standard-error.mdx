@@ -21,7 +21,7 @@ source: "lab/stats/standard_error.ipynb"
 
 誤差の概念図を下に示します。（標準偏差は、母集団から得られる母標準偏差と、標本から得られる標本標準偏差があることに注意）
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/01-error-concept.png`} alt="Standard error concept diagram" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/01-error-concept.png`} alt="Standard error concept diagram" />
 
 誤差は標本サイズと標準偏差（母標準偏差が無い時は標本標準偏差を使う）の関数として表され、下のような式で求めます。
 
@@ -37,11 +37,11 @@ source: "lab/stats/standard_error.ipynb"
 
 以下は標準誤差と標準偏差、そして標準偏差の入力になる分散との関係を示す概念図です。
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/02-se-variance-relation.png`} alt="Relationship among variance, standard deviation, and standard error" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/02-se-variance-relation.png`} alt="Relationship among variance, standard deviation, and standard error" />
 
 以下は標本サイズが増えれば増えるほど、標準誤差（ここでは母標準偏差を使う場合の標準誤差）が小さくなる様子を示すアニメーションです。
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/04-standard-error-shrinks.gif`} alt="Standard error shrinks as sample size increases" style="max-width:800px" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/04-standard-error-shrinks.gif`} alt="Standard error shrinks as sample size increases" style="max-width:800px" />
 
 #### アニメーションのコード
 
@@ -60,7 +60,7 @@ $$
 
 以下はそれを表す概念図です。（標本サイズと、算出された平均値が全く同じことに注意）
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/03-same-mean-different-sd.png`} alt="Same mean and sample size with different standard deviations" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/03-same-mean-different-sd.png`} alt="Same mean and sample size with different standard deviations" />
 
 このことから「同じ平均値だとしても、そしてさらに同じサンプルサイズだとしても、元のデータの標準偏差次第でその信頼性が異なる」ことが分かります。
 
@@ -70,14 +70,14 @@ $$
 
 {/* 可視化: 元ノートブックのコードセルを静止 PNG として再レンダーした。 */}
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/05-se-by-sample-size.png`} alt="Standard error by sample size for two populations" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/05-se-by-sample-size.png`} alt="Standard error by sample size for two populations" />
 
 別の視点で「平均が同じでも標準偏差が異なる様子」を示すのに、下のグラフのように「ヒゲ」を使うことができます。
 
 {/* 可視化: 元ノートブックのエラーバー plot を静止 PNG として再レンダーした。 */}
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/07-confidence-interval-comparison.png`} alt="Comparison of 95 percent confidence intervals" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/07-confidence-interval-comparison.png`} alt="Comparison of 95 percent confidence intervals" />
 
 ## 平均値の標準誤差と割合の標準誤差
 
-<img src={`${import.meta.env.BASE_URL}img/standard-error/06-mean-proportion-se.png`} alt="Standard error for means and proportions" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-error/06-mean-proportion-se.png`} alt="Standard error for means and proportions" />

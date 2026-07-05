@@ -61,7 +61,7 @@ $\sigma = \sqrt{\sigma^2}$
 
 分散はデータのバラつきぐらいを表します。そこで、分散が小さいもの、中くらいのもの、大きいものをイメージにしてみます。
 
-<img src={`${import.meta.env.BASE_URL}img/standard-deviation/01-variance-comparison.png`} alt="Small, medium, and large variance comparison" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-deviation/01-variance-comparison.png`} alt="Small, medium, and large variance comparison" />
 
 上の三つのグラフを見比べると、分散（Variance）の大きさの違いを、データポイントの偏差（平均との差）と合わせて理解できます。
 
@@ -77,14 +77,14 @@ $\sigma = \sqrt{\sigma^2}$
 
 以下は、データポイントが増えて、バラつきが変化するとともに、標準偏差も変化するようすを示すアニメーションです。青い点がデータポイントを表し、ひとつずつ集計に加えられ、合計で50個に達したら終了します。グレーの領域が標準偏差のエリアです。
 
-<img src={`${import.meta.env.BASE_URL}img/standard-deviation/03-scatter-buildup.gif`} alt="Standard deviation animation as sample points accumulate (scatter)" style="max-width:800px" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-deviation/03-scatter-buildup.gif`} alt="Standard deviation animation as sample points accumulate (scatter)" style="max-width:800px" />
 
 {/* アニメーションのコード: 元ノートブックの matplotlib FuncAnimation コードは転記せず、
    書き出し済み GIF (lab/stats/img/standard_deviation2.gif) をそのまま再利用した。 */}
 
 さらに、次のアニメーションはデータをヒストグラムの加えていき、それがどのように標準偏差のカーブに近づいていくかを示しています。データポイントが増えるにつれ、平均と標準偏差も変化する様子が分かります。
 
-<img src={`${import.meta.env.BASE_URL}img/standard-deviation/02-histogram-buildup.gif`} alt="Standard deviation animation as sample points accumulate (histogram)" style="max-width:800px" />
+<img src={`${import.meta.env.BASE_URL}/img/standard-deviation/02-histogram-buildup.gif`} alt="Standard deviation animation as sample points accumulate (histogram)" style="max-width:800px" />
 
 {/* アニメーションのコード: 元ノートブックの matplotlib FuncAnimation コードは転記せず、
    書き出し済み GIF (lab/stats/img/standard_deviation1.gif) をそのまま再利用した。 */}

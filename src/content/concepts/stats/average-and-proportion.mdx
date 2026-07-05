@@ -26,13 +26,13 @@ import PenguinAverageBars from "../../../components/viz/PenguinAverageBars";
 
 まずは「割合」として
 
-<img src={`${import.meta.env.BASE_URL}img/average-and-proportion/01-species-ratio-bar.png`} alt="Percentage of Penguin Species bar chart" />
+<img src={`${import.meta.env.BASE_URL}/img/average-and-proportion/01-species-ratio-bar.png`} alt="Percentage of Penguin Species bar chart" />
 
 この場合、```value_counts(normalize=True)``` 関数が「種類ごとの合計を出して、さらに全体で割って0~1の間の数値として表している。つまり「割合」を計算している。
 
 次に「それぞれの個体が、どの種類に当てはまるか」の平均を計算する。
 
-<img src={`${import.meta.env.BASE_URL}img/average-and-proportion/02-species-ratio-indicator-mean.png`} alt="Percentage of Penguin Species via Indicator Averages bar chart" />
+<img src={`${import.meta.env.BASE_URL}/img/average-and-proportion/02-species-ratio-indicator-mean.png`} alt="Percentage of Penguin Species via Indicator Averages bar chart" />
 
 ```dummies.mean()``` 変数を使ってそれぞれのカラムの「平均値」を計算する。値は0か1なので、平均は0~1の間になる。
 

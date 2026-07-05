@@ -19,7 +19,7 @@ Static Astro site deployed to GitHub Pages at https://yoshiwatanabe.github.io/co
 ## Hard rules
 1. **Preserve the user's Japanese narrative verbatim** when migrating notebook content. The text reflects his personal understanding — do not paraphrase, "improve", or translate it. Fixing an obvious typo is allowed only if noted in the task report.
 2. Chart/axis/UI labels inside visualizations are **English**; narrative text is Japanese.
-3. All internal links and asset URLs must respect the base path — use `import.meta.env.BASE_URL`, never hardcode `/concept-lab/` or root-absolute paths.
+3. All internal links and asset URLs must respect the base path — use `import.meta.env.BASE_URL`, never hardcode `/concept-lab/` or root-absolute paths. BASE_URL has NO trailing slash here: always write `${import.meta.env.BASE_URL}/img/...` (with the explicit `/`), never `${import.meta.env.BASE_URL}img/...`.
 4. Math is written as LaTeX in MDX (`$...$` / `$$...$$`), rendered by KaTeX. Verify rendering in the build output.
 5. Every concept declares `prerequisites` and `related` in frontmatter. If unsure, leave your best guess and flag it in the task report — the orchestrator curates the graph.
 6. Do not commit. Stage with `git add -A` and stop; the orchestrator reviews and commits.
