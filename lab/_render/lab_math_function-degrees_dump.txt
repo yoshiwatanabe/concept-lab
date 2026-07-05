@@ -1,0 +1,262 @@
+FILE: lab/math/function-degrees.ipynb, cells: 10
+---CELL 0 markdown---
+# 関数の次元とそのイメージ
+
+## 次数が異なる関数
+
+小学校で習う算数としての足し算・引き算は、実は一次関数として解釈することが可能です。そして２次関数や３次関数、そして４次関数などは学年を経て少しずつ学ぶものですが、全部を「次数が異なる関数」として統一して考えることで全体的な理解が深まります。
+
+## 関数の特徴をグラフとして把握する
+
+関数（function）は$x$にある値を代入した時に$y$の値がどのようになるかという特徴を持っていて、いろんな値を入れて得られる$x$と$y$の値をグラフに点として描いて得られる「線」をイメージすることで、関数の特徴をおおまかに捉えることが出来ます。
+
+| **次数** | **式**                              | **グラフの形の特徴**                                                   |
+|----------|-------------------------------------|------------------------------------------------------------------------|
+| 1次      | $y = x$                          | 直線。傾きが一定で、上昇または下降する単純な形状。                       |
+| 2次      | $y = x^2$                        | 放物線。頂点を中心に左右対称で、開き方は係数に依存する。                |
+| 3次      | $y = x^3$                        | S字型。1つの変曲点があり、上昇または下降を伴う滑らかな形状。            |
+| 4次（波形の場合） | $y = x^4 - 4x^2$                | 波型の場合。両端が同じ方向に伸び、中央に1つの谷と2つの山を持つ複雑な形状。（$x^4$のみの場合は波形ではない単純な形になる）    |
+
+つまり、関数の次数を見ると、大まかな「関数の振る舞い（入力に対してどのような出力をするか）」がある程度分かります。
+---CELL 1 code---
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the functions for 1st, 2nd, 3rd, and 4th degree
+x = np.linspace(-2, 2, 500)  # Define x-axis values
+
+y1 = x  # Linear (1st degree) function
+y2 = x**2  # Quadratic (2nd degree) function
+y3 = x**3  # Cubic (3rd degree) function
+y4_wave = x**4 - 4*x**2  # Wave-like quartic function
+
+# Create a 2x2 grid for subplots
+fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+
+# Plot each function in a separate subplot
+axs[0, 0].plot(x, y1, label="y = x (1st degree)", color="blue")
+axs[0, 0].axhline(0, color='black', linewidth=0.5)
+axs[0, 0].axvline(0, color='black', linewidth=0.5)
+axs[0, 0].grid(True)
+axs[0, 0].legend()
+
+axs[0, 1].plot(x, y2, label="y = x^2 (2nd degree)", color="orange")
+axs[0, 1].axhline(0, color='black', linewidth=0.5)
+axs[0, 1].axvline(0, color='black', linewidth=0.5)
+axs[0, 1].grid(True)
+axs[0, 1].legend()
+
+axs[1, 0].plot(x, y3, label="y = x^3 (3rd degree)", color="green")
+axs[1, 0].axhline(0, color='black', linewidth=0.5)
+axs[1, 0].axvline(0, color='black', linewidth=0.5)
+axs[1, 0].grid(True)
+axs[1, 0].legend()
+
+axs[1, 1].plot(x, y4_wave, label="y = x^4 - 4x^2 (4th degree, wave-like)", color="red")
+axs[1, 1].axhline(0, color='black', linewidth=0.5)
+axs[1, 1].axvline(0, color='black', linewidth=0.5)
+axs[1, 1].grid(True)
+axs[1, 1].legend()
+
+# Adjust layout to avoid overlap
+plt.tight_layout()
+plt.show()
+
+
+OUTPUT_IMAGE_PNG present
+---CELL 2 markdown---
+これらの４つのグラフを一つのグラフにまとめると以下のようになります。（４次関数は「標準型」と「波型」があります）
+---CELL 3 code---
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the functions for 1st, 2nd, 3rd, and 4th degree
+x = np.linspace(-2, 2, 500)  # Define x-axis values
+
+y1 = x  # Linear (1st degree) function
+y2 = x**2  # Quadratic (2nd degree) function
+y3 = x**3  # Cubic (3rd degree) function
+y4 = x**4  # Quartic (4th degree) function
+y4_wave = x**4 - 4*x**2  # Wave-like quartic function
+
+# Plot the standard 4 functions
+plt.figure(figsize=(10, 8))
+plt.plot(x, y1, label="y = x (1st degree)", linestyle="--")
+plt.plot(x, y2, label="y = x^2 (2nd degree)", linestyle=":")
+plt.plot(x, y3, label="y = x^3 (3rd degree)", linestyle="-.")
+plt.plot(x, y4, label="y = x^4 (4th degree)")
+
+plt.axhline(0, color='black', linewidth=0.5)  # x-axis
+plt.axvline(0, color='black', linewidth=0.5)  # y-axis
+plt.legend()
+plt.grid(True)
+plt.title("Standard 1st to 4th Degree Functions")
+plt.show()
+
+# Plot the updated wave-like 4th-degree function
+plt.figure(figsize=(10, 8))
+plt.plot(x, y1, label="y = x (1st degree)", linestyle="--")
+plt.plot(x, y2, label="y = x^2 (2nd degree)", linestyle=":")
+plt.plot(x, y3, label="y = x^3 (3rd degree)", linestyle="-.")
+plt.plot(x, y4_wave, label="y = x^4 - 4x^2 (4th degree, wave-like)")
+
+plt.axhline(0, color='black', linewidth=0.5)  # x-axis
+plt.axvline(0, color='black', linewidth=0.5)  # y-axis
+plt.legend()
+plt.grid(True)
+plt.title("Wave-like 4th Degree Function")
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+OUTPUT_IMAGE_PNG present
+---CELL 4 markdown---
+注意：
+- ひとつめのグラフでの４次関数は$y=x^4$という最も単純な４次関数の場合
+- ふたつめのグラフでの４次関数は「波型」になるような$y = x^4 - 4x^2 $という２次元の項を含む関数）
+---CELL 5 markdown---
+# 支配的な項
+1次関数から4次関数まで、**関数の「次数」に対応する項**（それぞれ順番に、一次項、二次項、三次項、四次項を指す）が最も支配的です。この項が、$x$ の値が大きくなるにつれて関数全体の形状を決定します。
+- **1次関数**では $y = ax$ の一次項のみが形状を決めます。
+- **2次関数**では $ax^2$ の二次項が全体の「放物線」の形を支配します。
+- **3次関数**では $ax^3$ の三次項が「S字型」の特徴を生み出します。
+- **4次関数**では $ax^4$ の四次項が、波型か単調増加・減少かを含む全体の形状を左右します。
+
+## その次数の項の係数が正か負かによる影響
+- **正の場合**：グラフは「上向き」の形を取ることが多い（例: 2次関数は上に開く、3次関数や4次関数では右上がりが強調される）。
+- **負の場合**：グラフは「下向き」の形を取る（例: 2次関数は下に開く、3次関数や4次関数では右下がりが強調される）。
+---CELL 6 code---
+# Reimporting necessary libraries after reset
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define x-axis values
+x = np.linspace(-2, 2, 500)
+
+# Define the functions for 1st, 2nd, 3rd, and 4th degree
+# Each function has a positive and negative coefficient for the dominant term
+y1_pos = x       # Linear (positive slope)
+y1_neg = -x      # Linear (negative slope)
+
+y2_pos = x**2    # Quadratic (positive coefficient)
+y2_neg = -x**2   # Quadratic (negative coefficient)
+
+y3_pos = x**3    # Cubic (positive coefficient)
+y3_neg = -x**3   # Cubic (negative coefficient)
+
+y4_pos = x**4 - 4*x**2  # Quartic (positive coefficient in dominant term)
+y4_neg = -x**4 - 4*x**2 # Quartic (negative coefficient in dominant term)
+
+# Create a 2x2 grid for subplots
+fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+
+# Plot each function with positive and negative coefficients
+# 1st Degree
+axs[0, 0].plot(x, y1_pos, label="y = x (positive slope)", color="blue")
+axs[0, 0].plot(x, y1_neg, label="y = -x (negative slope)", color="orange")
+axs[0, 0].set_title("1st Degree Function")
+axs[0, 0].axhline(0, color='black', linewidth=0.5)
+axs[0, 0].axvline(0, color='black', linewidth=0.5)
+axs[0, 0].legend()
+axs[0, 0].grid(True)
+
+# 2nd Degree
+axs[0, 1].plot(x, y2_pos, label="y = x^2 (positive coefficient)", color="green")
+axs[0, 1].plot(x, y2_neg, label="y = -x^2 (negative coefficient)", color="red")
+axs[0, 1].set_title("2nd Degree Function")
+axs[0, 1].axhline(0, color='black', linewidth=0.5)
+axs[0, 1].axvline(0, color='black', linewidth=0.5)
+axs[0, 1].legend()
+axs[0, 1].grid(True)
+
+# 3rd Degree
+axs[1, 0].plot(x, y3_pos, label="y = x^3 (positive coefficient)", color="purple")
+axs[1, 0].plot(x, y3_neg, label="y = -x^3 (negative coefficient)", color="brown")
+axs[1, 0].set_title("3rd Degree Function")
+axs[1, 0].axhline(0, color='black', linewidth=0.5)
+axs[1, 0].axvline(0, color='black', linewidth=0.5)
+axs[1, 0].legend()
+axs[1, 0].grid(True)
+
+# 4th Degree
+axs[1, 1].plot(x, y4_pos, label="y = x^4 - 4x^2 (positive coefficient)", color="cyan")
+axs[1, 1].plot(x, y4_neg, label="y = -x^4 - 4x^2 (negative coefficient)", color="magenta")
+axs[1, 1].set_title("4th Degree Function")
+axs[1, 1].axhline(0, color='black', linewidth=0.5)
+axs[1, 1].axvline(0, color='black', linewidth=0.5)
+axs[1, 1].legend()
+axs[1, 1].grid(True)
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 7 markdown---
+## その次数の項の係数の値の大きさによる影響
+- **大きい場合**：グラフが「急な変化」を示します。特に、関数の開き具合や傾きが急になる。
+- **小さい場合**：グラフが「緩やか」になります。例えば、放物線の開きが広くなったり、変化が緩やかになる。
+---CELL 8 code---
+# Define functions with large and small coefficients for the dominant term (positive values only)
+y1_large = 5 * x       # Linear (large slope)
+y1_small = 0.5 * x     # Linear (small slope)
+
+y2_large = 5 * x**2    # Quadratic (large coefficient)
+y2_small = 0.5 * x**2  # Quadratic (small coefficient)
+
+y3_large = 5 * x**3    # Cubic (large coefficient)
+y3_small = 0.5 * x**3  # Cubic (small coefficient)
+
+y4_large = 5 * x**4 - 4 * x**2  # Quartic (large coefficient in dominant term)
+y4_small = 0.5 * x**4 - 4 * x**2  # Quartic (small coefficient in dominant term)
+
+# Create a 2x2 grid for subplots
+fig, axs = plt.subplots(2, 2, figsize=(12, 12))
+
+# Plot each function with large and small coefficients
+# 1st Degree
+axs[0, 0].plot(x, y1_large, label="y = 5x (large slope)", color="blue")
+axs[0, 0].plot(x, y1_small, label="y = 0.5x (small slope)", color="orange")
+axs[0, 0].set_title("1st Degree Function (Effect of Coefficient Size)")
+axs[0, 0].axhline(0, color='black', linewidth=0.5)
+axs[0, 0].axvline(0, color='black', linewidth=0.5)
+axs[0, 0].legend()
+axs[0, 0].grid(True)
+
+# 2nd Degree
+axs[0, 1].plot(x, y2_large, label="y = 5x^2 (large coefficient)", color="green")
+axs[0, 1].plot(x, y2_small, label="y = 0.5x^2 (small coefficient)", color="red")
+axs[0, 1].set_title("2nd Degree Function (Effect of Coefficient Size)")
+axs[0, 1].axhline(0, color='black', linewidth=0.5)
+axs[0, 1].axvline(0, color='black', linewidth=0.5)
+axs[0, 1].legend()
+axs[0, 1].grid(True)
+
+# 3rd Degree
+axs[1, 0].plot(x, y3_large, label="y = 5x^3 (large coefficient)", color="purple")
+axs[1, 0].plot(x, y3_small, label="y = 0.5x^3 (small coefficient)", color="brown")
+axs[1, 0].set_title("3rd Degree Function (Effect of Coefficient Size)")
+axs[1, 0].axhline(0, color='black', linewidth=0.5)
+axs[1, 0].axvline(0, color='black', linewidth=0.5)
+axs[1, 0].legend()
+axs[1, 0].grid(True)
+
+# 4th Degree
+axs[1, 1].plot(x, y4_large, label="y = 5x^4 - 4x^2 (large coefficient)", color="cyan")
+axs[1, 1].plot(x, y4_small, label="y = 0.5x^4 - 4x^2 (small coefficient)", color="magenta")
+axs[1, 1].set_title("4th Degree Function (Effect of Coefficient Size)")
+axs[1, 1].axhline(0, color='black', linewidth=0.5)
+axs[1, 1].axvline(0, color='black', linewidth=0.5)
+axs[1, 1].legend()
+axs[1, 1].grid(True)
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 9 markdown---
+# まとめ
+
+関数のうち次数が１、２，３，４のものについては、その次数が１～４のいずれかを知ることで、すぐに関数のグラフ（つまりどのように入力と出力をマッピングするか）が理解できます。
+
+さらに、それぞれの関数の最も支配的な項（３次関数なら３次の項）の係数を見ることで、そのグラフに描かれる線の大まかな形がイメージできます。

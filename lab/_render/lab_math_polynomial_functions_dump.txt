@@ -1,0 +1,205 @@
+FILE: lab/math/polynomial_functions.ipynb, cells: 4
+---CELL 0 markdown---
+# 多項式関数の直観的な可視化
+
+多項式で次数が小さいものは、もっとも単純な形として以下のように表せます。
+
+- 次数が1の多項式関数 $y = x$
+- 次数が2の多項式関数 $y = x^2$
+- 次数が3の多項式関数 $y = x^3$ 
+
+そして、それぞれの多項式は次数に応じて特徴的な形になります。
+
+- $y = x$　直線
+- $y = x^2$　上に開いた放物線
+- $y = x^3$ S字曲線
+
+なぜそのような形になるのかを見ていきます。
+
+# 次数が3の多項式関数
+
+次数が3の多項式関数 $y = x^3$ をグラフで見ると「Ｓ字曲線」のようになります。なぜこうなるのかを可視化して、直観的に理解するためのアニメーションが以下です。
+
+<img src="img/polynomial_functions1.gif" alt="Description of GIF" style="width:800px;"/>
+
+(お断り：アニメーションの右側、立方体が描かれている座標では「xが負」の時も正の値のように表示されていますが本来なら負の値として描かれるべきです)
+
+曲線のグラフを見ると、原点から右側の曲線でｘが正の値として大きくなるにつれて、立方体の各辺の長さも当然大きくなり、それに伴って立方体の体積も増加している様子が分か分かります。
+
+一方、曲線のグラフの原点から左側の部分では、ｘは負の値です。ここで注意すべきは、立方体の「大きさ」（つまり辺の長さ）は常に正の量として増加するのですが、ｘ自体が負で、$x^3$で奇数回掛け合わせるので結果も負になり、立方体は「ネガティブな立方体」になります。体積に負であることを示すために、透けて見える色で描かれています。
+---CELL 1 markdown---
+# 次数が2の多項式関数
+
+次に $y = x^2$ の「上に開いた放物線」を考えます。
+
+xとxを掛け合わせるので結果は「正方形」になります。正方形は２次元なので３次元のグラフに描く必要はないのですが、$y = x^3$ の場合と比較しやすいようにあえて３Dで描画します。
+
+xが正の値の時にyが正になることは自然に理解できます。またxが負の値の時も「負の値を掛け合わせると正」になるのでyが正になります。その様子がアニメーションが見て取れます。
+
+<img src="img/polynomial_functions2.gif" alt="Description of GIF" style="width:800px;"/>
+
+### アニメーションのコード
+---CELL 2 code---
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+def draw_cube(ax, L, color, alpha):
+    vertices = np.array([[0, 0, 0],
+                         [L, 0, 0],
+                         [L, L, 0],
+                         [0, L, 0],
+                         [0, 0, L],
+                         [L, 0, L],
+                         [L, L, L],
+                         [0, L, L]])
+    faces = [[vertices[j] for j in [0, 1, 2, 3]],
+             [vertices[j] for j in [4, 5, 6, 7]],
+             [vertices[j] for j in [0, 1, 5, 4]],
+             [vertices[j] for j in [2, 3, 7, 6]],
+             [vertices[j] for j in [1, 2, 6, 5]],
+             [vertices[j] for j in [0, 3, 7, 4]]]
+    
+    cube = Poly3DCollection(faces, facecolors=color, alpha=alpha, edgecolor='k')
+    ax.add_collection3d(cube)
+    return cube
+
+# 図とサブプロットの準備（左：2D、右：3D）
+fig = plt.figure(figsize=(12, 6))
+ax2d = fig.add_subplot(1, 2, 1)
+ax3d = fig.add_subplot(1, 2, 2, projection='3d')
+
+# 2Dプロット：y = x³ のグラフ
+x_vals = np.linspace(-2, 2, 400)
+y_vals = x_vals ** 3
+ax2d.plot(x_vals, y_vals, 'k-', linewidth=1)
+ax2d.set_xlabel("x")
+ax2d.set_ylabel("y")
+ax2d.set_title("y = x³")
+point, = ax2d.plot([], [], 'ro', markersize=8)
+
+# 3Dプロットの設定と軸線の描画
+ax3d.set_xlim(0, 3)
+ax3d.set_ylim(0, 3)
+ax3d.set_zlim(0, 3)
+ax3d.set_xlabel("X")
+ax3d.set_ylabel("X")
+ax3d.set_zlabel("X")
+ax3d.view_init(elev=25, azim=60)
+ax3d.set_title("Cube corresponding to y = x³")
+ax3d.plot([0, 3], [0, 0], [0, 0], 'r-')  # x軸
+ax3d.plot([0, 0], [0, 3], [0, 0], 'g-')  # y軸
+ax3d.plot([0, 0], [0, 0], [0, 3], 'b-')  # z軸
+
+# 前回描画した立方体を保持するグローバル変数
+cube_art = None
+
+def update(frame):
+    global cube_art
+    t = frame / frames * 2 * np.pi
+    x = 2 * np.cos(t)
+    y = x ** 3  # y = x³
+
+    # 修正箇所：x, y はリストにして渡す
+    point.set_data([x], [y])
+
+    # 以前の立方体があれば削除
+    if cube_art is not None:
+        cube_art.remove()
+
+    L = abs(x) if abs(x) > 0.01 else 0.01
+
+    if y >= 0:
+        cube_color = 'blue'
+        cube_alpha = 1.0
+    else:
+        cube_color = 'blue'
+        cube_alpha = 0.1
+
+    cube_art = draw_cube(ax3d, L, cube_color, cube_alpha)
+    return point, cube_art
+
+frames = 100
+anim = FuncAnimation(fig, update, frames=frames, interval=100, blit=False)
+
+anim.save("polynomial_functions1.gif", writer=PillowWriter(fps=10))
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 3 code---
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+def draw_square(ax, L, color, alpha):
+    # 正方形の頂点：原点からLの長さの正方形（床面）
+    vertices = np.array([[0, 0, 0],
+                         [L, 0, 0],
+                         [L, L, 0],
+                         [0, L, 0]])
+    face = [vertices]  # 1枚の面のみ
+    square = Poly3DCollection(face, facecolors=color, alpha=alpha, edgecolor='k')
+    ax.add_collection3d(square)
+    return square
+
+# 図とサブプロットの準備（左：2D、右：3D）
+fig = plt.figure(figsize=(12, 6))
+ax2d = fig.add_subplot(1, 2, 1)
+ax3d = fig.add_subplot(1, 2, 2, projection='3d')
+
+# 2Dプロット：y = x² のグラフ
+x_vals = np.linspace(-2, 2, 400)
+y_vals = x_vals ** 2
+ax2d.plot(x_vals, y_vals, 'k-', linewidth=1)
+ax2d.set_xlabel("x")
+ax2d.set_ylabel("y")
+ax2d.set_title("y = x²")
+point, = ax2d.plot([], [], 'ro', markersize=8)
+
+# 3Dプロットの設定と軸線の描画
+ax3d.set_xlim(0, 3)
+ax3d.set_ylim(0, 3)
+ax3d.set_zlim(0, 3)
+ax3d.set_xlabel("X")
+ax3d.set_ylabel("X")
+ax3d.set_zlabel("(X)")
+ax3d.view_init(elev=30, azim=45)
+ax3d.set_title("Square corresponding to y = x²")
+ax3d.plot([0, 3], [0, 0], [0, 0], 'r-')  # x軸
+ax3d.plot([0, 0], [0, 3], [0, 0], 'g-')  # y軸
+ax3d.plot([0, 0], [0, 0], [0, 3], 'b-')  # z軸
+
+# 前回描画した正方形を保持するグローバル変数
+square_art = None
+
+def update(frame):
+    global square_art
+    t = frame / frames * 2 * np.pi
+    x = 2 * np.cos(t)
+    y = x ** 2  # y = x²
+
+    # 2Dプロット上の点を更新
+    point.set_data([x], [y])
+
+    # 前回の正方形があれば削除
+    if square_art is not None:
+        square_art.remove()
+
+    L = abs(x) if abs(x) > 0.01 else 0.01
+
+    # y = x² では常に y >= 0 なので色は青、不透明度1.0
+    square_color = 'blue'
+    square_alpha = 1.0
+
+    square_art = draw_square(ax3d, L, square_color, square_alpha)
+    return point, square_art
+
+frames = 100
+anim = FuncAnimation(fig, update, frames=frames, interval=100, blit=False)
+
+anim.save("animation.gif", writer=PillowWriter(fps=10))
+plt.show()
+
+OUTPUT_IMAGE_PNG present

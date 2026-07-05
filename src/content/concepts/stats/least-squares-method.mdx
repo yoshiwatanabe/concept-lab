@@ -1,0 +1,38 @@
+---
+title_ja: 最小二乗法
+title_en: Least Squares Method
+domain: stats
+level: 3
+prerequisites: ["standard-deviation"]
+related: ["linear-regression"]
+viz: ["static", "interactive"]
+status: migrated
+source: "lab/stats/least_squires_method.ipynb"
+---
+
+import LeastSquaresFit from "../../../components/viz/LeastSquaresFit";
+
+{/* 元のノートブック (lab/stats/least_squires_method.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   attachment 画像は public/img/least-squares-method/ に抽出し、V1 インタラクティブは既存 island に置き換えた。 */}
+
+# 最小二乗法
+
+## 最小二乗法の可視化
+
+[インターアクティブに最小二乗法を試すページを開く](https://yoshiwatanabe.github.io/python-test/least_squires_method.html)
+
+インターアクティブページを開くと、以下のような状態になっているはずです。
+ここでは、いくつかのデータポイントが散布図に配置してあり、さらに$y=ax + b$という直線に対して書くデータポイントからの誤差を（誤差の２乗）としての「正方形（赤枠）」で表しています。
+
+さらに、それらの正方形をすべて足し合わせた「合計の正方形（薄緑色）」がオーバーレイ表示されているのが分かります。最小二乗法はこの「合計の正方形が最も小さくなるように」$y=ax + b" の$a$ と $b$、すなわち傾きと切片を調整して「フィットさせる」ことです。
+
+<img src={`${import.meta.env.BASE_URL}img/least-squares-method/01-least-squares-start.png`} alt="Least squares start state" />
+
+傾きと切片をスライダーで調整して、以下のように「合計の正方形」が出来るだけ小さくなる組み合わせを探します。
+
+<img src={`${import.meta.env.BASE_URL}img/least-squares-method/02-least-squares-fit.png`} alt="Least squares fitted state" />
+
+{/* 可視化: V1 の lab/interactive-v1/least_squires_method.html は、
+   既存の LeastSquaresFit island で同じ固定データ・残差平方・合計平方の操作に置き換える。 */}
+
+<LeastSquaresFit client:load />

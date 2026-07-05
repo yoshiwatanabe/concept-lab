@@ -1,0 +1,109 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+import matplotlib.gridspec as gridspec
+
+# Function to create a single hypothesis testing plot
+def create_hypothesis_test_plot(ax, alpha, effect_size):
+    # Set up x range
+    x = np.linspace(-5, 5, 1000)
+    
+    # Critical values for two-tailed test
+    critical_value = stats.norm.ppf(1 - alpha/2)
+    
+    # Null hypothesis distribution (μ = 0, σ = 1)
+    y_null = stats.norm.pdf(x, 0, 1)
+    
+    # Alternative hypothesis distribution (μ = effect_size, σ = 1)
+    y_alt = stats.norm.pdf(x, effect_size, 1)
+    
+    # Calculate areas for errors
+    # Type I error (α) - false positive area
+    x_typeI = np.linspace(critical_value, 5, 200)
+    y_typeI = stats.norm.pdf(x_typeI, 0, 1)
+    x_typeI_neg = np.linspace(-5, -critical_value, 200)
+    y_typeI_neg = stats.norm.pdf(x_typeI_neg, 0, 1)
+    
+    # Type II error (β) - false negative area
+    x_typeII = np.linspace(-critical_value, critical_value, 200)
+    y_typeII = stats.norm.pdf(x_typeII, effect_size, 1)
+    
+    # Power (1-β) - true positive area
+    x_power_right = np.linspace(critical_value, 5, 200)
+    y_power_right = stats.norm.pdf(x_power_right, effect_size, 1)
+    x_power_left = np.linspace(-5, -critical_value, 200)
+    y_power_left = stats.norm.pdf(x_power_left, effect_size, 1)
+    
+    # Plot the distributions
+    ax.plot(x, y_null, 'b-', linewidth=2, label='Null Hypothesis (H₀: μ = 0)')
+    ax.plot(x, y_alt, 'r-', linewidth=2, label='Alternative Hypothesis (H₁: μ ≠ 0)')
+    
+    # Fill in the error areas
+    ax.fill_between(x_typeI, 0, y_typeI, color='blue', alpha=0.3, label='Type I Error (α)')
+    ax.fill_between(x_typeI_neg, 0, y_typeI_neg, color='blue', alpha=0.3)
+    ax.fill_between(x_typeII, 0, y_typeII, color='red', alpha=0.3, label='Type II Error (β)')
+    
+    # Fill in the power area
+    ax.fill_between(x_power_right, 0, y_power_right, color='green', alpha=0.3, label='Power (1-β)')
+    ax.fill_between(x_power_left, 0, y_power_left, color='green', alpha=0.3)
+    
+    # Add vertical lines for critical values
+    ax.axvline(x=critical_value, color='purple', linestyle='--', linewidth=1.5, 
+               label=f'Critical Value (±{critical_value:.2f})')
+    ax.axvline(x=-critical_value, color='purple', linestyle='--', linewidth=1.5)
+    
+    # Calculate actual errors
+    type_I_error = alpha
+    type_II_error = stats.norm.cdf(critical_value, loc=effect_size) - stats.norm.cdf(-critical_value, loc=effect_size)
+    power = 1 - type_II_error
+    
+    # Annotations - add text boxes with error values
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    textstr = '\n'.join((
+        f'Significance Level (α): {type_I_error:.3f}',
+        f'Type II Error (β): {type_II_error:.3f}',
+        f'Power (1-β): {power:.3f}',
+        f'Effect Size (d): {effect_size}'
+    ))
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10,
+            verticalalignment='top', bbox=props)
+    
+    # Set labels
+    ax.set_xlabel('Test Statistic Value', fontsize=12)
+    ax.set_ylabel('Probability Density', fontsize=12)
+    ax.legend(loc='upper right', fontsize=9)
+    
+    return ax
+
+# Create a 2x2 grid of plots showing different combinations
+plt.style.use('seaborn-v0_8-whitegrid')
+fig = plt.figure(figsize=(16, 12))
+gs = gridspec.GridSpec(2, 2)
+
+# 1. Top left: Standard case (α=0.05, effect size=1.0)
+ax1 = plt.subplot(gs[0, 0])
+create_hypothesis_test_plot(ax1, alpha=0.05, effect_size=1.0)
+ax1.set_title('Standard Case: α=0.05, Effect Size=1.0', fontsize=14, fontweight='bold')
+
+# 2. Top right: Lower significance level (α=0.01, effect size=1.0)
+ax2 = plt.subplot(gs[0, 1])
+create_hypothesis_test_plot(ax2, alpha=0.01, effect_size=1.0)
+ax2.set_title('Lower Significance Level: α=0.01, Effect Size=1.0', fontsize=14, fontweight='bold')
+
+# 3. Bottom left: Smaller effect size (α=0.05, effect size=0.5)
+ax3 = plt.subplot(gs[1, 0])
+create_hypothesis_test_plot(ax3, alpha=0.05, effect_size=0.5)
+ax3.set_title('Smaller Effect Size: α=0.05, Effect Size=0.5', fontsize=14, fontweight='bold')
+
+# 4. Bottom right: Larger effect size (α=0.05, effect size=2.0)
+ax4 = plt.subplot(gs[1, 1])
+create_hypothesis_test_plot(ax4, alpha=0.05, effect_size=2.0)
+ax4.set_title('Larger Effect Size: α=0.05, Effect Size=2.0', fontsize=14, fontweight='bold')
+
+plt.tight_layout(rect=[0, 0.1, 1, 0.97])
+plt.suptitle('Visualizing Type I (α) and Type II (β) Errors in Hypothesis Testing', 
+             fontsize=16, fontweight='bold', y=0.99)
+
+# Save the figure
+plt.savefig('hypothesis_testing_errors.png', dpi=300, bbox_inches='tight')
+plt.show()

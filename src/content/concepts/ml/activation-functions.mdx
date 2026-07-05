@@ -1,0 +1,45 @@
+---
+title_ja: 活性化関数
+title_en: Activation Functions
+domain: ml
+level: 3
+prerequisites:
+  - logistic-function
+related:
+  - logistic-function
+viz:
+  - static
+  - interactive
+status: migrated
+source: lab/ml/activation_functions.ipynb
+---
+
+import ActivationFunctionsExplorer from "../../../components/viz/ActivationFunctionsExplorer";
+
+# 活性化関数
+
+### 🔽 簡単なまとめ：ReLU / Sigmoid / Tanh の比較
+
+| 関数     | 出力範囲   | 中心が0 | 勾配消失のリスク | 主な用途                          |
+|----------|------------|---------|------------------|-----------------------------------|
+| ReLU     | 0 以上      | ✕       | 少ない           | 深層学習における標準的な隠れ層     |
+| Sigmoid  | 0 ～ 1      | ✕       | 起きやすい       | 出力層（バイナリ分類など）        |
+| Tanh     | -1 ～ 1     | ○       | 起こりうる       | RNNなどの中間層（古典的な用途）   |
+
+
+<ActivationFunctionsExplorer client:load />
+
+
+<img src={`${import.meta.env.BASE_URL}/img/activation-functions/plot-01-cell02.png`} alt="Activation Functions plot from notebook cell 2" />
+
+### 🔽 ざっくり比較表（ReLU以外の4つの重要な活性化関数）
+
+| 関数名     | 負の出力 | 勾配消失の回避 | 中心が0 | 特徴                                   |
+|------------|----------|------------------|---------|----------------------------------------|
+| Leaky ReLU | ○（小）  | ○                | ✕       | ReLUの死問題を軽減                     |
+| ELU        | ○        | ○                | ○       | 負の出力も自然、滑らかな曲線           |
+| Swish      | ○        | ◎                | ○       | Google提案、学習が安定、高性能な傾向   |
+| GELU       | ○        | ◎                | ○       | Transformer系で採用、統計的に洗練されている |
+
+
+<img src={`${import.meta.env.BASE_URL}/img/activation-functions/plot-02-cell04.png`} alt="Activation Functions plot from notebook cell 4" />

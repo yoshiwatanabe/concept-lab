@@ -1,0 +1,78 @@
+---
+title_ja: 質的変数を量的変数として扱う
+title_en: Average and Proportion
+domain: stats
+level: 2
+prerequisites: ["datasets"]
+related: ["standard-deviation", "bernoulli-distribution"]
+viz: ["static", "interactive"]
+status: migrated
+source: "lab/stats/average_and_proportion.ipynb"
+---
+
+import PenguinAverageBars from "../../../components/viz/PenguinAverageBars";
+
+{/* 元のノートブック (lab/stats/average_and_proportion.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   コードセル自体は転記せず、出力されたグラフは静的画像として再生成した。 */}
+
+# 質的変数を量的変数として扱う
+
+## 割合と平均は同じこと
+
+- ペンギンの種類の割合（全体に対する数）を集計すること
+- ペンギンのそれぞれの種類であるだろう度合い（２値）の平均を集計すること
+
+をそれぞれ Python で計算する。
+
+まずは「割合」として
+
+<img src={`${import.meta.env.BASE_URL}img/average-and-proportion/01-species-ratio-bar.png`} alt="Percentage of Penguin Species bar chart" />
+
+この場合、```value_counts(normalize=True)``` 関数が「種類ごとの合計を出して、さらに全体で割って0~1の間の数値として表している。つまり「割合」を計算している。
+
+次に「それぞれの個体が、どの種類に当てはまるか」の平均を計算する。
+
+<img src={`${import.meta.env.BASE_URL}img/average-and-proportion/02-species-ratio-indicator-mean.png`} alt="Percentage of Penguin Species via Indicator Averages bar chart" />
+
+```dummies.mean()``` 変数を使ってそれぞれのカラムの「平均値」を計算する。値は0か1なので、平均は0~1の間になる。
+
+```get_dummies(df["species"])``` 関数は以下のようなカラムを加える。
+
+| Index | Adelie | Gentoo | Chinstrap |
+|-------|--------|--------|-----------|
+| 0     | 1      | 0      | 0         |
+| 1     | 0      | 1      | 0         |
+| 2     | 1      | 0      | 0         |
+| ...   | ...    | ...    | ...       |
+
+それぞれの個体がどの種類なのかを、One-hot encodingを用いて、１＝当てはまる、０＝当てはまらないの２値変数で表している。
+
+# 平均値を取る様子を示すアニメーション
+
+「平均値」を取る様子をイメージできるように p5.js で簡単なアニメーションを作りました。
+
+ｘ軸にペンギンの個体を並べて、種類ごとに色を変えて、高さが１になるバーを描きます。ｙ軸は0~1ですが、全ての値は１なので「完全に埋まったバーグラフ」に見えます。「左矢印」をクリックすると、それぞれの「平均」が点線で表示されます。
+
+{/* 可視化: V1 (lab/interactive-v1/average_of_categorical_data.html) は静止画プレビューと外部リンクのみだった。
+   ここでは同じ p5.js ロジック（種ごとに色分けした個体バー＋ボタンで平均線を１本ずつ表示）を
+   Preact + canvas 2D のインタラクティブ・アイランドとして埋め込む。 */}
+
+<PenguinAverageBars client:load />
+
+上のバーはペンギン個体１体ずつ（種によって色分け）を表し、すべて高さ１のバーとして描かれている。「Show next species average」ボタンを押すごとに、各種の平均（＝割合）が点線として１本ずつ追加表示される。
+
+# どう頭の中で整理するか
+
+「割合」を考える時、そのカテゴリのひとつに当てはまるかどうかの度合いの平均値と考えることが出来る。
+
+「Adelieペンギンが全体の44％だ」と言う時「Adelieペンギンに該当するか度合いの平均が0.44だ」と言うことも出来る。
+
+# どう発展できるか
+
+「質的な特徴の割合」についての集計（男女、地域、行動するかどうかなど）は「平均値」としても表すことが出来るので、平均値を使った処理や演算を用いて「割合」についての集計も可能になる。
+
+割合と平均を分けて考えるのではなく、平均で統一して考えることが出来る。
+
+{/* つながり: 前提概念は datasets（seaborn penguins データセット）。ここで得た「割合＝平均」という
+   視点は、次の standard-deviation（バラつきの指標）や bernoulli-distribution（２値変数の分布）で
+   繰り返し使われる。 */}

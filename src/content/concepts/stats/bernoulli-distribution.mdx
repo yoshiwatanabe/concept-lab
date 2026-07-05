@@ -1,0 +1,52 @@
+---
+title_ja: ベルヌーイ分布とベルヌーイ試行、および二項分布
+title_en: Bernoulli Distribution and Binomial Distribution
+domain: stats
+level: 2
+prerequisites: ["average-and-proportion"]
+related: ["central-limit-theorem"]
+viz: ["static"]
+status: migrated
+source: "lab/stats/bernoulli_distribution.ipynb"
+---
+
+{/* 元のノートブック (lab/stats/bernoulli_distribution.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   コードセル自体は転記せず、静止画はノートブック出力の再生成、ダイスの相対頻度アニメーションは
+   既存 GIF (lab/stats/img/bernoulli_trial.gif) を再利用した。 */}
+
+# ベルヌーイ分布とベルヌーイ試行、および二項分布
+
+- ベルヌーイ試行：「成功」または「失敗」の二つの結果がある試行。成功確率$p$があり、何度試行を繰り返してもその確率は変わらない（独立している）
+- ベルヌーイ分布：「１回のベルヌーイ試行」の結果を表す確率分布
+- 二項分布：ベルヌーイ試行を複数回繰り返した時の成功回数を表す分布（言い換えると「ベルヌーイ分布を繰り返し適用して結果を集計したもの」）
+
+以下のコードは成功確率$p$が$0.3$のベルヌーイ分布を示すバーグラフを表示します。
+
+<img src={`${import.meta.env.BASE_URL}img/bernoulli-distribution/01-bernoulli-bar-p03.png`} alt="Bernoulli Distribution bar chart, p = 0.3" />
+
+# ベルヌーイ試行から得られる二項分布
+
+サイコロを振って「１が出たら成功」（１以外が出たら失敗）」とする現象では成功確率は$p = \frac{1}{6}$になる。
+
+以下はベルヌーイ試行を行い、回数が増えるにつれ、二項分布の相対度数が$\frac{1}{6}$に収束していく様子を可視化しています。
+
+<img src={`${import.meta.env.BASE_URL}img/bernoulli-distribution/03-dice-relative-frequency.gif`} alt="Relative frequency of a die roll converging to 1/6" style="max-width:800px" />
+
+# 二項分布と成功確率
+
+ベルヌーイ分布はコイントスで表が出る確率では$\frac{1}{2}$、サイコロの６が出る確率は$\frac{1}{6}$というように０～１の範囲を取ります。
+
+様々な成功確率の現象で、分散 $\sigma^2 = n p (1-p)$ がどのようになるかを示したのが下図です。
+
+なお、試行回数は10回、50回、100回と固定しています。
+
+<img src={`${import.meta.env.BASE_URL}img/bernoulli-distribution/02-variance-vs-p.png`} alt="Variance of Binomial Distribution vs. Success Probability" />
+
+上のグラフで得られる直観。
+
+- どの試行回数でも、現象の成功確率が0.5の時（ちょうど横軸の中央あたり）、「分散が大きい（縦軸の値が大きい）」。これはコイントスの現象で「表が出る」と「裏が出る」が偏りなく（より分散して）起こることを表す。
+- どの試行回数でも、現象の成功確率が極端に高い（0.93など）場合と極端に低い（0.02など）場合は「分散」も小さい、つまり偏って成功回数が多くなる（もしくは成功回数が少なくなる）
+- 試行回数$n$が小さいと分散の違いが明確に出にくい（青い平な曲線は成功確率の違いがはっきりと出にくい＝分散しにくい）ことを表している。逆に試行回数が多くなると潜在的に分散が大きくなる成功率0.5が、より明確に分散することが分かる。
+
+{/* つながり: 前提概念は average-and-proportion（割合＝平均という視点）。ベルヌーイ試行の繰り返し平均は
+   central-limit-theorem（標本平均が正規分布に近づく現象）の具体例のひとつでもある。 */}

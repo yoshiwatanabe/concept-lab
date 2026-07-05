@@ -1,0 +1,25 @@
+---
+title_ja: z検定
+title_en: Z-Test
+domain: stats
+level: 3
+prerequisites: ["hypothesis-testing", "standard-error"]
+related: ["t-test"]
+viz: ["static"]
+status: migrated
+source: "lab/stats/z-test.ipynb"
+---
+
+{/* 元のノートブック (lab/stats/z-test.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   attachment 画像は public/img/z-test/ に抽出した。 */}
+
+# z検定
+
+平均からの差（標本の平均と仮説での平均の差）だけでは標準化されていないのでそのままでは評価しにくい（テストの点そのものは使いにくいのと同じ理屈）。そこで標準誤差で割ることで（標準誤差という単位で測ることで）標準化する。この値が「z値」。z値は、標準正規分布（平均0、標準偏差1）と比較可能な形に変換されるため、どれくらい極端な結果かを確率として評価できます。
+
+- 標準誤差（標本のばらつき）が大きい場合、同じ差でもz値は小さくなり、統計的に意味のある差とみなされにくくなる
+- 標準誤差が小さいと、少しの差でもz値は大きくなり、仮説と大きく乖離していると判断される可能性が高くなる
+
+以下はz検定の流れを表す概念図
+
+<img src={`${import.meta.env.BASE_URL}img/z-test/01-z-test-flow.png`} alt="Z-test flow concept diagram" />

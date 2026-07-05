@@ -1,0 +1,110 @@
+--- CELL 0 (markdown) ---
+# 統計処理練習ようのデータセット
+
+ライブラリ組み込み済みのデータセットなので、データソースが突然なくなるリスクが無い（低い）もの。
+--- CELL 1 (code) ---
+%pip install statsmodels
+[STREAM]: Requirement already satisfied: statsmodels in /usr/local/python/3.12.1/lib/python3.12/site-packages (0.14.4)
+Requirement already satisfied: numpy<3,>=1.22.3 in /home/codespace/.local/lib/python3.12/si
+--- CELL 2 (markdown) ---
+## skylearn
+
+| データセット名 | 用途 |
+|--------------|------|
+| `datasets.load_iris()` | 多クラス分類（花の特徴データ）|
+| `datasets.load_diabetes()` | 回帰分析（糖尿病患者データ） |
+| `datasets.load_wine()` | 多クラス分類（ワインの成分データ） |
+| `datasets.load_digits()` | 画像データ（手書き数字認識） |
+
+--- CELL 3 (code) ---
+import pandas as pd
+from sklearn import datasets
+
+# データセットのリスト
+sklearn_datasets = {
+    "iris": datasets.load_iris(),
+    "diabetes": datasets.load_diabetes(),
+    "wine": datasets.load_wine(),
+    "digits": datasets.load_digits()
+}
+
+# データセットの内容を表示する関数
+def display_dataset(name, df):
+    print(f"\n===== {name} Dataset =====")
+    print(df.head(5))
+
+# Scikit-learn データセットの表示
+for name, dataset in sklearn_datasets.items():
+    df = pd.DataFrame(dataset.data, columns=dataset.feature_names)
+    if "target" in dataset:
+        df["target"] = dataset.target
+    display_dataset(name, df)
+
+[STREAM]: 
+===== iris Dataset =====
+   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \
+0                5.1               3.5                1.4               0.2   
+1               
+--- CELL 4 (markdown) ---
+## Seaborn
+
+| データセット名 | 用途 |
+|--------------|------|
+| `sns.load_dataset('tips')` | チップの支払いデータ（回帰、統計検定）|
+| `sns.load_dataset('penguins')` | ペンギンの種類分類（クラス分類）|
+| `sns.load_dataset('titanic')` | タイタニック生存者データ（生存分析、ロジスティック回帰） |
+--- CELL 5 (code) ---
+import pandas as pd
+import seaborn as sns
+
+seaborn_datasets = ["tips", "penguins", "titanic"]
+
+# データセットの内容を表示する関数
+def display_dataset(name, df):
+    print(f"\n===== {name} Dataset =====")
+    print(df.head(5))
+
+
+# Seaborn データセットの表示
+for name in seaborn_datasets:
+    df = sns.load_dataset(name)
+    display_dataset(name, df)
+
+
+
+[STREAM]: 
+===== tips Dataset =====
+   total_bill   tip     sex smoker  day    time  size
+0       16.99  1.01  Female     No  Sun  Dinner     2
+1       10.34  1.66    Male     No  Sun  Dinner     3
+2       21.0
+--- CELL 6 (markdown) ---
+## Statsmodels
+
+| データセット名 | 用途 |
+|--------------|------|
+| `sm.datasets.get_rdataset("mtcars")` | 車の性能データ（回帰分析） |
+| `sm.datasets.get_rdataset("airquality")` | 大気汚染データ（時系列分析） |
+| `sm.datasets.get_rdataset("iris")` | アイリスデータ（分類） |
+--- CELL 7 (code) ---
+import statsmodels.api as sm
+
+statsmodels_datasets = ["mtcars", "airquality", "iris"]
+
+# データセットの内容を表示する関数
+def display_dataset(name, df):
+    print(f"\n===== {name} Dataset =====")
+    print(df.head(5))
+
+
+# Statsmodels データセットの表示
+for name in statsmodels_datasets:
+    dataset = sm.datasets.get_rdataset(name)
+    df = dataset.data
+    display_dataset(name, df)
+
+[STREAM]: 
+===== mtcars Dataset =====
+                    mpg  cyl   disp   hp  drat     wt   qsec  vs  am  gear  \
+rownames                                                                     
+Mazda RX4       

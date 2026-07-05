@@ -1,0 +1,52 @@
+---
+title_ja: カイ２乗分布
+title_en: Chi-Squared Distribution
+domain: stats
+level: 3
+prerequisites: ["hypothesis-testing"]
+related: ["t-test"]
+viz: ["static"]
+status: migrated
+source: "lab/stats/chi_squared_distribution.ipynb"
+---
+
+{/* 元のノートブック (lab/stats/chi_squared_distribution.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   元ノートブックが書き出した GIF は public/img/chi-squared-distribution/ にコピーして再利用した。 */}
+
+# カイ２乗分布
+
+カイ２乗分布とは、標準正規分布から任意の数だけサンプルを取り、それぞれを２乗して合計した値を別のグラフにプロットした時に現れる分布のこと。
+
+特徴として、サンプルする数（自由度と呼ぶ）が少ない時は左側に山、右側に尻尾が出来る。また、二乗するので正の値しかない。
+
+### なぜこのような形になる？
+
+標準正規分布からのサンプル数が少ない時は、正規分布では0付近が山になっていて（つまりデータが多い）、0付近のデータがサンプルされやすく、0付近のデータの二乗も0に近いので、カイ２乗分布のグラフでも0付近に２乗和の結果が集中する。これは同時に、0よりも離れた極端に小さいマイナスやプラスの値のデータがサンプルされにくいので、カイ２乗分布でも、右端の方に２乗和の結果が現れることが少ないということ。
+
+自由度=3の時にどのようにサンプルデータの二乗和が求められるかを可視化したのが下のアニメーション。
+２乗することを「正方形」で表し、それらの合計も正方形で表している。右側のグラフに、二乗和がどのあたりのデータとしてプロットされるかを示しています。自由度=3の場合は、左端に多くが出現しているのが分かります。
+
+<img src={`${import.meta.env.BASE_URL}img/chi-squared-distribution/01-chi2-animation.gif`} alt="Chi-squared animation for df=3" style="max-width:900px" />
+
+
+## 異なる自由度でのカイ２乗分布
+
+自由度を小さい値から大きいものに変えて、その効果を可視化してみる。自由度は3, 7, 12, 20。
+赤い曲線は理論値で、オレンジ色のバーは実際にサンプリングして得た２乗和の値。
+
+
+**自由度=3の場合**
+
+<img src={`${import.meta.env.BASE_URL}img/chi-squared-distribution/02-chi2-animation-df-3.gif`} alt="Chi-squared animation for df=3" style="max-width:900px" />
+
+**自由度=7の場合**
+
+<img src={`${import.meta.env.BASE_URL}img/chi-squared-distribution/03-chi2-animation-df-7.gif`} alt="Chi-squared animation for df=7" style="max-width:900px" />
+
+**自由度=12の場合**
+
+<img src={`${import.meta.env.BASE_URL}img/chi-squared-distribution/04-chi2-animation-df-12.gif`} alt="Chi-squared animation for df=12" style="max-width:900px" />
+
+**自由度=20の場合**
+
+<img src={`${import.meta.env.BASE_URL}img/chi-squared-distribution/05-chi2-animation-df-20.gif`} alt="Chi-squared animation for df=20" style="max-width:900px" />

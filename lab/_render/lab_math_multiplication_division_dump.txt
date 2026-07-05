@@ -1,0 +1,296 @@
+FILE: lab/math/multiplication_division.ipynb, cells: 17
+---CELL 0 markdown---
+# 掛け算と割り算を一次関数として統一的に理解する
+四則演算のうちの掛け算と割り算、つまり「積」と「商」は一次関数として捉えて統一的に理解できます。
+
+一次関数（linier function）は、与えられた値とその結果をグラフにすると「直線」になります。一次関数の一般的な形は$y=kx+b$となり、$k$ の値の違いが「掛け算」と「割り算」の違いになります。
+---CELL 1 markdown---
+# 掛け算
+
+掛け算は、何かの数値を「３倍する」とか「それに３を掛ける」という意味ですが、その性質をグラフで表すとどうなるのでしょうか？
+
+一次関数（linier function）は$y=kx+b$という形になりますが、$k$ の値の違いが「掛け算」と「割り算」の違いになります。（割り算も実は掛け算、というところは今は無視しましょう）
+
+定数$b$については今は脇に置いておくため$0$だとして、以下のグラフを見てみましょう。
+---CELL 2 code---
+# 必要なライブラリをインポート
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+# SymPyの初期設定
+sp.init_printing()
+
+# シンボルを定義
+x = sp.symbols('x')
+
+# 係数のリスト
+coefficients = [0, 1, 3]
+
+# 定数項を固定（例として0に設定）
+b = 0
+
+# xの値を生成（ループの外で一度だけ生成）
+x_vals = np.linspace(-10, 10, 400)
+
+# グラフを描画
+plt.figure(figsize=(8, 8))
+
+# 各係数についてループ
+for k in coefficients:
+    # 一次関数を定義
+    linear_func = k * x + b
+
+    # 数式を数値計算用の関数に変換
+    linear_func_numeric = sp.lambdify(x, linear_func, 'numpy')
+
+    # yの値を計算
+    y_vals = linear_func_numeric(x_vals)
+
+    # y_valsがスカラー値の場合、x_valsと同じ形状の配列に変換
+    if np.isscalar(y_vals):
+        y_vals = np.full_like(x_vals, y_vals)
+
+    # グラフを描画
+    label = f'y = {k}x + {b}'
+    plt.plot(x_vals, y_vals, label=label)
+
+# アスペクト比を等しく設定
+plt.axis('equal')
+
+# グラフの範囲を設定（必要に応じて調整）
+plt.xlim(-10, 10)
+plt.ylim(-10, 10)
+
+# 補助線（x軸とy軸）を追加
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
+
+# グラフの設定
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 3 markdown---
+- 傾きが$0$の時：$x$がどんな値でも$y$は常に$0$ （水平の直線）
+- 傾きが$1$の時：$x$がどんな値でも$y$は常に同じ値（このグラフの書き方では斜め４５度の直線）
+- 傾きが$3$の時：$x$が３倍に拡大される（傾きがより急な直線）
+
+つまり「掛け算」は標準として傾き１で$x$の値がそのまま$y$の値になるところを、一定の倍率で増加させる処理だと理解できます。
+---CELL 4 markdown---
+# 負の数の掛け算
+
+同じ掛け算だけどマイナス記号のついた$-3$などを掛けるとどうなるでしょう。
+一次関数として捉えた場合、係数$k$が負の数になるので$y=-3*x+b$のような形になります。
+
+以下のグラフでは「そのまま（1倍）」と比べて「マイナス１を掛ける」と「マイナス３を掛ける」という計算処理を比べています。
+---CELL 5 code---
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+sp.init_printing()
+x = sp.symbols('x')
+
+# 係数のリスト
+coefficients = [-3, -1, 1]
+
+b = 0
+x_vals = np.linspace(-10, 10, 400)
+
+plt.figure(figsize=(8, 8))
+
+# 各係数についてループ
+for k in coefficients:
+    linear_func = k * x + b
+    linear_func_numeric = sp.lambdify(x, linear_func, 'numpy')
+    y_vals = linear_func_numeric(x_vals)
+
+    if np.isscalar(y_vals):
+        y_vals = np.full_like(x_vals, y_vals)
+
+    label = f'y = {k}x + {b}'
+    plt.plot(x_vals, y_vals, label=label)
+
+plt.axis('equal')
+
+plt.xlim(-10, 10)
+plt.ylim(-10, 10)
+
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 6 markdown---
+- そのままの時： 与えられた数値はそのまま（拡大も縮小もしない）
+- マイナス１を掛ける： 与えられた数値の値そのものは同じだけどプラスマイナスがひっくり返る
+- マイナス３を掛ける： 与えられた数値がマイナスの方向に拡大される
+---CELL 7 markdown---
+# 割り算
+
+割り算も一次関数として考えると、グラフの傾きを決める係数$k$に、$0$から$1$の間の数値（および$-1$から$0$の間の数値）を入れることで「縮小」する処理だと言い換えることができます。つまり、例えば$0.1$倍とか $0.5$倍することが、割り算ということになります。$0.1$倍とは「$10$で割る」という意味であり、$0.5$倍とは「$2$で割る」という意味であることを確認しておきましょう。
+
+以下では係数が「正の値」と「負の値」の両方を取る状態をひとつにまとめて表しています。係数が$1$と$-1$の場合はすでに解説しているので省きます。
+---CELL 8 code---
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+sp.init_printing()
+x = sp.symbols('x')
+coefficients = [-1, -0.5, 0.5, 1]
+b = 0
+x_vals = np.linspace(-10, 10, 400)
+plt.figure(figsize=(8, 8))
+
+# 各係数についてループ
+for k in coefficients:
+    linear_func = k * x + b
+    linear_func_numeric = sp.lambdify(x, linear_func, 'numpy')
+    y_vals = linear_func_numeric(x_vals)
+
+    if np.isscalar(y_vals):
+        y_vals = np.full_like(x_vals, y_vals)
+
+    label = f'y = {k}x + {b}'
+    plt.plot(x_vals, y_vals, label=label)
+
+plt.axis('equal')
+
+plt.xlim(-10, 10)
+plt.ylim(-10, 10)
+
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.legend()
+plt.show()
+OUTPUT_IMAGE_PNG present
+---CELL 9 markdown---
+- $2$で割る（つまり$0.5$を掛ける）時： グラフ上で係数が$１$の直線の傾きよりも緩やかな直線になります。つまり与えられた数値より小さい値になる（縮小される）ということ
+- $-2$で割る（つまり$-0.5$を掛ける）時： グラフ上で係数が$-1$の直線の傾きよりも緩やかな直線になります。これは$-1$掛ける場合より少な目に値が減ることになります（ちょっとこれの直観的表現が難しい・・・）
+---CELL 10 markdown---
+# 掛け算と割り算の一次関数グラフ
+
+掛け算と割り算の両方を、それぞれ「正の値」と「負の値」も含めて表すと以下のようになります。
+---CELL 11 code---
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+sp.init_printing()
+x = sp.symbols('x')
+coefficients = [-3, -1, -0.5, 0, 0.5, 1, 3]
+b = 0
+x_vals = np.linspace(-10, 10, 400)
+plt.figure(figsize=(8, 8))
+
+# 各係数についてループ
+for k in coefficients:
+    # 一次関数を定義
+    linear_func = k * x + b
+    linear_func_numeric = sp.lambdify(x, linear_func, 'numpy')
+    y_vals = linear_func_numeric(x_vals)
+
+    if np.isscalar(y_vals):
+        y_vals = np.full_like(x_vals, y_vals)
+
+    label = f'y = {k}x + {b}'
+    plt.plot(x_vals, y_vals, label=label)
+
+plt.axis('equal')
+
+plt.xlim(-10, 10)
+plt.ylim(-10, 10)
+
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 12 markdown---
+$1$倍（と$-1$倍）の直線が４５度の角度になっていて、その直線より傾きを増やすことが「掛け算」であり、それはつまり$1$倍（と$-1$倍）の時よりも「拡大」することになります。同様に４５度の角度よりも傾きを減らすことが「割り算」で、それはつまり$1$倍（と$-1$倍）の時よりも「縮小」することになります。
+
+つまりこれは掛け算と割り算は「比例関係」を演算として表していることになります。
+---CELL 13 markdown---
+# 定数項の効果
+
+ここで、今まで$0$に固定してた定数項$b$がどのように一次関数のグラフに影響を与えるかをみながら、その効果を理解しましょう。
+
+以下のグラフでは、これまで見てきた１倍する関数、正の値の掛け算、負の値の掛け算、倍率が０から１の間の掛け算（つまり割り算のこと）、などの全ての直線が上に平行移動しているのが分かります。
+---CELL 14 code---
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+sp.init_printing()
+
+x = sp.symbols('x')
+coefficients = [-2, -1, 0.5, 1, 2]
+
+# 定数項を指定
+b = 2
+
+x_vals = np.linspace(-10, 10, 400)
+plt.figure(figsize=(8, 8))
+
+# 各係数についてループ
+for k in coefficients:
+    linear_func = k * x + b
+    linear_func_numeric = sp.lambdify(x, linear_func, 'numpy')
+    y_vals = linear_func_numeric(x_vals)
+
+    if np.isscalar(y_vals):
+        y_vals = np.full_like(x_vals, y_vals)
+
+    label = f'y = {k}x + {b}'
+    plt.plot(x_vals, y_vals, label=label)
+
+plt.axis('equal')
+
+plt.xlim(-10, 10)
+plt.ylim(-10, 10)
+
+plt.axhline(0, color='black', linewidth=0.5)
+plt.axvline(0, color='black', linewidth=0.5)
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+OUTPUT_IMAGE_PNG present
+---CELL 15 markdown---
+これは全ての掛け算と割り算の結果に、一様に$+2$をしたことになります。そして特に$x$が$0$の時、どの場合でも$2$になることから「切片は$2$」という言い方ができます。
+
+傾きは「比例関係」を表してましたが、定数項は「増減」を表していました。増減とは「足す・引く」ということで、つまりは「足し算」と「引き算」のことなのです。
+
+また、定数項を「バイアス」として捉えることでその意味をより深く理解できます。定数項を指定できないと、$x$が$0$の時は$y$は$0$のような、正しいけれど現実世界では必ずしもそうはならない現象などを表すことが出来なくなってしまうからです（例えば「現在の身長をスタートに成長を表す」などの場合だと、身長が０などはそもそも存在しませんから必要になります）。
+---CELL 16 markdown---
+# 抽象化
+
+掛け算を考えるとき、まずは $10 \times 3$ のような具体的な数値で考えることから始めます。次に、$\times 3$ に着目すると「ある数に $3$ を掛ける」という演算操作が見えてきます。未知の値を代入したとき、結果は「その値を $3$ 倍したもの」になります。
+
+掛け算を抽象化して表すと、一次関数などの関数の係数 $k$ として表現されます。ここで、$k$ が正の値であれば元の値を拡大し、負の値であれば符号を反転させつつ拡大します。
+
+同様に、割り算についても考えます。例えば、$10 \div 2$ を考えると、「ある数を $2$ で割る」という演算操作が見えてきます。これは、「ある数に $\dfrac{1}{2}$ を掛ける」ことと同じです（これは同時に「ある数に$0.5$を掛ける」ことと同じです）。
+
+割り算を抽象化して表すと、一次関数の係数 $k$ が（$0 < k < 1$）となります。これにより、元の値を縮小する操作を表現できます。

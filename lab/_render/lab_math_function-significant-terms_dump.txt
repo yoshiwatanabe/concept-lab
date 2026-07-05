@@ -1,0 +1,161 @@
+FILE: lab/math/function-significant-terms.ipynb, cells: 7
+---CELL 0 markdown---
+# 多項式関数の支配的な項の効果
+
+関数の項のうち「もっとも支配的」な項がその関数を強く特徴付けます。それをイメージできるようになれば、その関数の大まかな特徴を捉えることが出来ると考えました。
+
+まずは４つの多項式関数の項と係数についておさらいしておきます。
+
+| 関数の種類 | 一般形 | 係数 |
+|------------|--------|------|
+| 一次関数   | $y = ax + b$ | $a, b$ |
+| 二次関数   | $y = ax^2 + bx + c$ | $a, b, c$ |
+| 三次関数   | $y = ax^3 + bx^2 + cx + d$ | $a, b, c, d$ |
+| 四次関数   | $y = ax^4 + bx^3 + cx^2 + dx + e$ | $a, b, c, d, e$ |
+
+これらのうち、いずれの関数においても、その多項式の次数が付いている項（３次関数なら$ax^3$）が最も支配的な項です。例えば二次関数の場合は$x^2$の項が圧倒的に影響が大きいです、何しろ２乗するわけですから$x$の項や定数項はかないません。その最も支配的な項の係数は、この表ではすべて$a$になります。
+
+この$a$が大きい時と小さい時、グラフはどうなるのでしょうか。
+
+## 最も支配的な項の係数が多項式関数全体に与える影響をグラフでみる
+
+まずは「最も支配的な項の係数」の大小がどのように関数に影響を与えるかをグラフでイメージします。この場合、その項の影響だけに注目するために他の項は無いこととします。
+
+---CELL 1 code---
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the x range for plotting
+x = np.linspace(-10, 10, 1000)
+
+# Define the coefficients for different dominant terms
+coefficients = [
+    (1, 0.1),   # Small dominant term
+    (1, 10)     # Large dominant term
+]
+
+# Functions for different orders of polynomials
+def linear(x, a): return a * x
+def quadratic(x, a): return a * x**2
+def cubic(x, a): return a * x**3
+def quartic(x, a): return a * x**4
+
+# Set up the subplots
+# Replot with restricted y-axis limits to make the graphs less extreme
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+
+# Define y-axis limits for better comparison
+y_limits = (-50, 50)
+
+for i, (func, title) in enumerate(zip(functions, titles)):
+    ax = axes[i // 2, i % 2]
+    for coef in coefficients:
+        y = func(x, coef[1])
+        ax.plot(x, y, label=f"a={coef[1]}")
+    ax.axhline(0, color='gray', linestyle='--', linewidth=0.8)
+    ax.axvline(0, color='gray', linestyle='--', linewidth=0.8)
+    ax.set_title(title)
+    ax.set_xlabel("x")
+    ax.set_ylabel("f(x)")
+    ax.legend()
+    ax.set_ylim(y_limits)  # Restrict y-axis limits
+
+plt.tight_layout()
+plt.show()
+OUTPUT_IMAGE_PNG present
+---CELL 2 markdown---
+それぞれの特徴を言葉で表すと
+
+| 関数の種類 | 最も支配的な項の係数の効果 | 
+|------------|--------|
+| 一次関数   | 直線の傾きを決定しています。大きいほど傾きが急になります | 
+| 二次関数   | 放物線の開き具合を決定しています。大きいほど鋭い放物線になります | 
+| 三次関数   | S字の線の開き具合を決定しています。大きいほど狭いくてのっぽのＳ字になります | 
+| 四次関数   | Ｗ字（この場合真ん中の山が無いタイプ）両脇の開き具合を決定しています。大きいほどすぐに鋭く増加しています。 | 
+---CELL 3 markdown---
+# 2番目に支配的な項の影響
+
+次に、最も支配的な項の係数は$1$にして、標準的な線を描くようにした状態（二次関数なら放物線）で、その次の次元の項の係数の違いがどのように関数に影響するかをグラフにして見える化してみます。ナンバー２の影響を測ってみるわけです。
+
+表にするまでもなく、以下の全ての場合$b$ですが、念のため・・・
+
+| 関数の種類 | 一般形 | ２番目に支配的な項の係数 |
+|------------|--------|------|
+| 一次関数   | $y = ax + b$ | $b$ |
+| 二次関数   | $y = ax^2 + bx + c$ | $b$ |
+| 三次関数   | $y = ax^3 + bx^2 + cx + d$ | $b$ |
+| 四次関数   | $y = ax^4 + bx^3 + cx^2 + dx + e$ | $b$ |
+---CELL 4 code---
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the x range for plotting
+x = np.linspace(-10, 10, 1000)
+
+# Increase the interval for 'b' values to spread them further apart
+second_term_values = np.linspace(0.1, 5, 6)  # Wider range for the second term
+
+# Define functions including the second dominant term for each polynomial
+def linear_with_second(x, a, b): return a * x + b
+def quadratic_with_second(x, a, b): return a * x**2 + b * x
+def cubic_with_second(x, a, b): return a * x**3 + b * x**2
+def quartic_with_second(x, a, b): return a * x**4 + b * x**3
+
+# Update the coefficients for the second dominant terms
+coefficients_second = [
+    (1, 2),    # Large dominant term
+    (0.5, 0.1) # Small second dominant term
+]
+
+# Set up new functions and titles for second dominant term
+functions_with_second = [
+    linear_with_second, 
+    quadratic_with_second, 
+    cubic_with_second, 
+    quartic_with_second
+]
+
+titles_with_second = [
+    "Linear with constant term",
+    "Quadratic with linear term",
+    "Cubic with quadratic term",
+    "Quartic with cubic term"
+]
+
+# Replot for second dominant term effects
+# Replot with legends showing the function equations for each curve
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+
+for i, (func, title) in enumerate(zip(functions_with_second, titles_with_second)):
+    ax = axes[i // 2, i % 2]
+    for b in second_term_values:  # Vary 'b' for each subplot
+        y = func(x, 1, b)  # 'a' is fixed at 1
+        if func == linear_with_second:
+            label = f"y = x + {b:.1f}"
+        elif func == quadratic_with_second:
+            label = f"y = x^2 + {b:.1f}x"
+        elif func == cubic_with_second:
+            label = f"y = x^3 + {b:.1f}x^2"
+        elif func == quartic_with_second:
+            label = f"y = x^4 + {b:.1f}x^3"
+        ax.plot(x, y, label=label)
+    ax.axhline(0, color='gray', linestyle='--', linewidth=0.8)
+    ax.axvline(0, color='gray', linestyle='--', linewidth=0.8)
+    ax.set_title(title)
+    ax.set_xlabel("x")
+    ax.set_ylabel("f(x)")
+    ax.legend()
+OUTPUT_IMAGE_PNG present
+---CELL 5 markdown---
+今回は全部で６つの値を等間隔で「２番目に支配的な項の係数」としてグラフの変化をイメージしてみました。
+
+| 関数の種類 | ２番目に支配的な項の係数 |
+|------------|--------|
+| 一次関数   | 一定の傾きの直線を上下する効果が見えます |
+| 二次関数   | これは少し意外でしたが、値が増えるにつれ放物線全体が左下にすこしシフトしています。しかも$y$の値が減少していくことが興味深いです |
+| 三次関数   | 係数の値が増えるにつれ、S字曲線が逆方向に曲がる点（この場合は原点と重なっている点）は固定して全体的にyの値が増えています。一次関数の定数項と似たような効果ですが、原点に変化がないのが興味深いです |
+| 四次関数   | 右側がより早く駆け上がり、左側が遅く駆け上がり始めるイメージ|
+---CELL 6 markdown---
+# まとめ
+
+多項式関数では、まずはその関数の次数が関数の最大の特徴になり、その上で「最も支配的な項」の係数の大きさがその関数の特徴をさらに変化させる。加えて「２番目に支配的な項」も、いうまでもなく次に影響を与えるが、その振る舞いはとても興味深いものになった。それぞれの係数の値がもたらす関数への影響をグラフとしてイメージすれば、多項式関数の例を見たときにおおよそのグラフのイメージができるようになり、ひいては関数のおおまかなふるまいについても直観的に把握することができると考えます。

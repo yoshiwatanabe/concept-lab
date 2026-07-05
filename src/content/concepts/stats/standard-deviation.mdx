@@ -1,0 +1,94 @@
+---
+title_ja: 標準偏差
+title_en: Standard Deviation
+domain: stats
+level: 2
+prerequisites: ["average-and-proportion"]
+related: ["standard-error", "central-limit-theorem"]
+viz: ["static", "interactive"]
+status: migrated
+source: "lab/stats/standard_deviation.ipynb"
+---
+
+import StdDevStepper from "../../../components/viz/StdDevStepper";
+
+{/* 元のノートブック (lab/stats/standard_deviation.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   コードセル自体は転記せず、静止画は再生成、アニメーションは既存 GIF (lab/stats/img/) を再利用した。 */}
+
+# 標準偏差
+
+## 偏差と分散と標準偏差
+
+{/* 可視化: V1 では「データ→偏差→分散→標準偏差」の流れを示す静止画（フローチャート）1枚と、
+   別ノートブック (lab/stats/standard_deviation.ipynb 用の V1 インタラクティブ:
+   lab/interactive-v1/standard_deviation_for_population.html) では固定5点データセット
+   [3, 5, 2, 6, 4] を「前へ/次へ」ボタンでステップ実行し、平均→偏差→２乗→合計→分散→標準偏差の
+   順に描き加えていく p5.js スケッチだった。ここではその同じステップ構成を Preact + canvas 2D の
+   インタラクティブ・アイランドとして統合する。 */}
+
+<StdDevStepper client:load />
+
+「Next →」を押すごとに、データの平均線、各データ点の偏差線、偏差の２乗（正方形）、その合計、分散（合計 ÷ n）、標準偏差（分散の平方根）の順に描き加えられる。
+
+#### 偏差
+
+$x_i - \bar{x}$
+
+- 各データ点から平均値を引いた値
+- 各データがどれだけ中心から逸脱しているか
+- 平均からどのぐらい偏っているか
+- 平均からどのぐらいズレているか
+- 正と負の値がある
+- 英語で deviation は基準からのズレ
+
+#### 分散
+
+$ \sigma^2 = \frac{1}{n}\sum_{i=1}^{n}(x_i - \bar{x})^2$
+
+- 偏差の２乗の平均
+- 全体的なバラつき具合
+- ２乗するので偏差が負でも正になる（正負を無視してバラつきを示せる）
+
+#### 標準偏差
+
+$\sigma = \sqrt{\sigma^2}$
+
+- 分散の平方根
+- 全体的なバラつき具合を示す
+- 元の単位に戻す（分散で二乗されたから）
+
+# 分散の比較
+
+分散はデータのバラつきぐらいを表します。そこで、分散が小さいもの、中くらいのもの、大きいものをイメージにしてみます。
+
+<img src={`${import.meta.env.BASE_URL}img/standard-deviation/01-variance-comparison.png`} alt="Small, medium, and large variance comparison" />
+
+上の三つのグラフを見比べると、分散（Variance）の大きさの違いを、データポイントの偏差（平均との差）と合わせて理解できます。
+
+分散$\sigma^2$はそれぞれ
+
+- $\sigma^2=7.9$
+- $\sigma^2=57.0$
+- $\sigma^2=144.0$
+
+です。この分散をグラフ中で示すために、分散の平方根、つまり標準偏差を用いて「グレーの領域」として示しています。
+
+# 標準偏差
+
+以下は、データポイントが増えて、バラつきが変化するとともに、標準偏差も変化するようすを示すアニメーションです。青い点がデータポイントを表し、ひとつずつ集計に加えられ、合計で50個に達したら終了します。グレーの領域が標準偏差のエリアです。
+
+<img src={`${import.meta.env.BASE_URL}img/standard-deviation/03-scatter-buildup.gif`} alt="Standard deviation animation as sample points accumulate (scatter)" style="max-width:800px" />
+
+{/* アニメーションのコード: 元ノートブックの matplotlib FuncAnimation コードは転記せず、
+   書き出し済み GIF (lab/stats/img/standard_deviation2.gif) をそのまま再利用した。 */}
+
+さらに、次のアニメーションはデータをヒストグラムの加えていき、それがどのように標準偏差のカーブに近づいていくかを示しています。データポイントが増えるにつれ、平均と標準偏差も変化する様子が分かります。
+
+<img src={`${import.meta.env.BASE_URL}img/standard-deviation/02-histogram-buildup.gif`} alt="Standard deviation animation as sample points accumulate (histogram)" style="max-width:800px" />
+
+{/* アニメーションのコード: 元ノートブックの matplotlib FuncAnimation コードは転記せず、
+   書き出し済み GIF (lab/stats/img/standard_deviation1.gif) をそのまま再利用した。 */}
+
+{/* つながり: 前提概念は average-and-proportion（平均という土台）。標準偏差は次の
+   standard-error（標本サイズによる標準誤差）や central-limit-theorem（標本平均のバラつき）で
+   繰り返し使われる中心的な指標。 */}

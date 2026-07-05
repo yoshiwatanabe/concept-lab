@@ -1,0 +1,69 @@
+---
+title_ja: 帰無仮説
+title_en: Null Hypothesis
+domain: stats
+level: 2
+prerequisites: ["standard-error"]
+related: ["hypothesis-testing"]
+viz: ["static", "interactive"]
+status: migrated
+source: "lab/stats/null_hypothesis.ipynb"
+---
+
+import NullHypothesisExplorer from "../../../components/viz/NullHypothesisExplorer";
+
+{/* 元のノートブック (lab/stats/null_hypothesis.ipynb) の markdown セルより、逐語（verbatim）で転記。 */}
+
+# 帰無仮説
+
+[統計学が最強の学問である[実践編]――データ分析のための思想と方法](https://amzn.asia/d/ifHoafB) の第二章で「カラスが黒い」という仮説に絡めて帰無仮説と信頼区間の解説があります。その例を元に、帰無仮説とP値、それと信頼区間を可視化しました。
+
+まず、この「カラスは黒い」の例を概念図として以下のようになります。
+
+![image.png](/concept-lab/img/null-hypothesis/cell0-02.png)
+
+本中では「カラスが黒い確率が50%」という帰無仮説はじめ、いくつかの確率のでの帰無仮説を例にしています。それらを５％を目安に「帰無仮説がありえない」か「帰無仮説を棄却できない」ものに分けている様子をまとめると以下のようになります。
+
+![image-2.png](/concept-lab/img/null-hypothesis/cell0-01.png)
+
+次に、異なる帰無仮説と、対応するP値をプロットします。
+
+![p-value vs. hypothesized proportion](/concept-lab/img/null-hypothesis/pvalue-vs-proportion.png)
+
+上のプロットから分かること。
+
+- 橙の点：「カラスが黒い確率が50%」と仮定して「100羽続けて黒いカラスに遭遇する確率」はほとんどゼロ。
+- 緑の点：「カラスが黒い確率が90%」と仮定して「100羽続けて黒いカラスに遭遇する確率」もほとんどゼロ。
+- 赤の点：「カラスが黒い確率が95%」と仮定して「100羽続けて黒いカラスに遭遇する確率」もかなりゼロに近い。
+- 紫の点：「カラスが黒い確率が97.2%」と仮定して「100羽続けて黒いカラスに遭遇する確率」は5.8%ぐらい（5％を超える）
+- 茶の点：「カラスが黒い確率が98.0%」と仮定して「100羽続けて黒いカラスに遭遇する確率」は13.3%ぐらい（100%に向かい始める）
+
+赤い点線がちょうどP値＝5%のところで
+
+- 「左側」はP値が5％より小さい＝＞確率が小さすぎるので、その帰無仮説はあり得ない言える
+- 「右側」ではP値が5％より大きい＝＞20回に1回程度かそれ以上起こりうるので、その帰無仮説は棄却的るとは言えない（つまり『あり得る』と言える）
+
+# P値と帰無仮説と信頼区間の関係
+
+**信頼区間 Confidence Interval** ：信頼区間は「平均値＋－2SE」で表すことが出来る。「あり得る仮説」と「あり得ない仮説」を分ける境目を区分で示す。
+
+「あるP値」がその帰無仮説における信頼区間（受容域）に現れなければ、その帰無仮説は棄却される。
+
+同様のアニメーションをp5.js で実装したページは以下のリンクから開きます。
+
+（プレビュー）
+![image.png](/concept-lab/img/null-hypothesis/cell4-01.png)
+
+[P値と帰無仮説と信頼区間の関係のアニメーションのページを開く](https://yoshiwatanabe.github.io/python-test/null_hypothesis.html)
+
+{/* 可視化: V1 では上記 p5.js アニメーション（帰無仮説の分布が動き、P値と信頼区間が変化する様子）だった。
+   観測データが 100/100 で固定のため、片側p値は p0^100 という閉じた式になる。ここではその式をスライダーで
+   直接動かせるインタラクティブな版に置き換える。 */}
+
+<NullHypothesisExplorer client:load />
+
+Hypothesized proportion（p0）のスライダーを動かすと、p値 = p0<sup>100</sup> の曲線上を現在地が動き、
+p値が有意水準 α = 0.05 を下回ると「Reject H0」に、上回ると「Cannot reject H0」に判定が切り替わる。
+
+前提となる標準誤差（standard error）の考え方の上に、信頼区間と帰無仮説の関係が成り立つ。次のステップとして、
+この考え方を一般化した統計的仮説検定（hypothesis testing）につながる。

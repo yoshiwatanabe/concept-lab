@@ -1,0 +1,46 @@
+---
+title_ja: 統計処理練習ようのデータセット
+title_en: Datasets for Statistics Practice
+domain: stats
+level: 1
+prerequisites: []
+related: ["average-and-proportion"]
+viz: []
+status: migrated
+source: "lab/stats/dataset.ipynb"
+---
+
+{/* 元のノートブック (lab/stats/dataset.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   コードセル（各ライブラリからのデータセット読み込み・表示コード）は転記しない。 */}
+
+# 統計処理練習ようのデータセット
+
+ライブラリ組み込み済みのデータセットなので、データソースが突然なくなるリスクが無い（低い）もの。
+
+## skylearn
+
+| データセット名 | 用途 |
+|--------------|------|
+| `datasets.load_iris()` | 多クラス分類（花の特徴データ）|
+| `datasets.load_diabetes()` | 回帰分析（糖尿病患者データ） |
+| `datasets.load_wine()` | 多クラス分類（ワインの成分データ） |
+| `datasets.load_digits()` | 画像データ（手書き数字認識） |
+
+## Seaborn
+
+| データセット名 | 用途 |
+|--------------|------|
+| `sns.load_dataset('tips')` | チップの支払いデータ（回帰、統計検定）|
+| `sns.load_dataset('penguins')` | ペンギンの種類分類（クラス分類）|
+| `sns.load_dataset('titanic')` | タイタニック生存者データ（生存分析、ロジスティック回帰） |
+
+## Statsmodels
+
+| データセット名 | 用途 |
+|--------------|------|
+| `sm.datasets.get_rdataset("mtcars")` | 車の性能データ（回帰分析） |
+| `sm.datasets.get_rdataset("airquality")` | 大気汚染データ（時系列分析） |
+| `sm.datasets.get_rdataset("iris")` | アイリスデータ（分類） |
+
+{/* つながり: このページで挙げたデータセット（特に seaborn penguins）は、以降の統計概念ページ
+   （average-and-proportion 等）の具体例として繰り返し使われる。 */}

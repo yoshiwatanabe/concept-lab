@@ -1,0 +1,83 @@
+---
+title_ja: 標準誤差
+title_en: Standard Error
+domain: stats
+level: 3
+prerequisites: ["central-limit-theorem"]
+related: ["standard-deviation", "confidence-intervals"]
+viz: ["static"]
+status: migrated
+source: "lab/stats/standard_error.ipynb"
+---
+
+{/* 元のノートブック (lab/stats/standard_error.ipynb) の markdown セルより、逐語（verbatim）で転記。
+   attachment 画像は public/img/standard-error/ に抽出し、コードセルの静止プロットは PNG として再レンダーした。 */}
+
+# 標準誤差
+
+標準誤差はある母集団の統計量の代替として、標本データから得られた推定値がどのぐらい真の値に近いかを示します。
+
+通常「標本データから得られた平均値」について、その平均値が真の平均値に対してどのぐらいバラつきがあるかを示し、バラつきが小さいほど「信頼できる」と評価できます。
+
+誤差の概念図を下に示します。（標準偏差は、母集団から得られる母標準偏差と、標本から得られる標本標準偏差があることに注意）
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/01-error-concept.png`} alt="Standard error concept diagram" />
+
+誤差は標本サイズと標準偏差（母標準偏差が無い時は標本標準偏差を使う）の関数として表され、下のような式で求めます。
+
+- 母標準偏差を使う場合： $\frac{\sigma}{\sqrt{n}}$
+- 標本標準偏差を使う場合： $\frac s{\sqrt{n}}$
+
+いずれの場合も「標準偏差」を「標本サイズ $n$」の平方根で割ります。これはつまり「誤差」は「標本サイズの平方根に反比例する」ことを表します。つまり
+
+- 標本サイズが大きいほど、誤差が小さくなる
+- 標本サイズが小さいほど、誤差が大きくなる
+
+これは、例えば「５人の男性の身長の平均値をもって、男子全員の平均値とするには無理がある、なぜならたまたまその５人が背が低い（もしくは高い）人ばかりだった可能性があるから」という直感に近いでしょう。
+
+以下は標準誤差と標準偏差、そして標準偏差の入力になる分散との関係を示す概念図です。
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/02-se-variance-relation.png`} alt="Relationship among variance, standard deviation, and standard error" />
+
+以下は標本サイズが増えれば増えるほど、標準誤差（ここでは母標準偏差を使う場合の標準誤差）が小さくなる様子を示すアニメーションです。
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/04-standard-error-shrinks.gif`} alt="Standard error shrinks as sample size increases" style="max-width:800px" />
+
+#### アニメーションのコード
+
+{/* アニメーションのコード: 元ノートブックの matplotlib FuncAnimation コードは転記せず、
+   書き出し済み GIF (lab/stats/img/standard_error1.gif) を再利用した。 */}
+
+# 標準誤差と標準偏差の関係
+
+標準誤差は標準偏差を分子に取る分数の形を取るので、分子が大きければ結果も大きい。つまりデータのバラつきが大きいほど誤差も大きくなる、という直感に従うと言えます。
+
+$$
+SE = \frac{標準偏差}{\sqrt{n}}
+$$
+
+例えば、全く同じサンプルサイズで集計した平均値が全く同じだとしても、元のデータの標準偏差次第では、その平均値がどのぐらい母集団の真の平均値を代表できているかの信頼性が変わってきます。
+
+以下はそれを表す概念図です。（標本サイズと、算出された平均値が全く同じことに注意）
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/03-same-mean-different-sd.png`} alt="Same mean and sample size with different standard deviations" />
+
+このことから「同じ平均値だとしても、そしてさらに同じサンプルサイズだとしても、元のデータの標準偏差次第でその信頼性が異なる」ことが分かります。
+
+以下は、上の例をさらにに広げて、平均値は固定して、異なるサンプルサイズごとの二つのグループ間（ひとつは標準偏差が小さく、もうひとつは標準偏差が大きい）での標準誤差の違いを表しています。
+
+どちらもサンプルサイズを増やせば増やすほど標準誤差は小さくなりますが、元のデータの標準偏差が影響している様子が分かります。
+
+{/* 可視化: 元ノートブックのコードセルを静止 PNG として再レンダーした。 */}
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/05-se-by-sample-size.png`} alt="Standard error by sample size for two populations" />
+
+別の視点で「平均が同じでも標準偏差が異なる様子」を示すのに、下のグラフのように「ヒゲ」を使うことができます。
+
+{/* 可視化: 元ノートブックのエラーバー plot を静止 PNG として再レンダーした。 */}
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/07-confidence-interval-comparison.png`} alt="Comparison of 95 percent confidence intervals" />
+
+## 平均値の標準誤差と割合の標準誤差
+
+<img src={`${import.meta.env.BASE_URL}img/standard-error/06-mean-proportion-se.png`} alt="Standard error for means and proportions" />

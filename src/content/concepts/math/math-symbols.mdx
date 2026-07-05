@@ -1,0 +1,179 @@
+---
+title_ja: 数学記号の読み方
+title_en: Mathematical Symbols
+domain: math
+level: 1
+prerequisites: []
+related: []
+viz: []
+status: migrated
+source: lab/math/symbols.ipynb
+---
+
+# ギリシャ文字の読み方
+
+| ギリシャ文字 (大文字) | ギリシャ文字 (小文字) | カタカナ読み        |
+|-----------------------|-----------------------|--------------------|
+| Α (Alpha)            | α (alpha)            | アルファ           |
+| Β (Beta)             | β (beta)             | ベータ             |
+| Γ (Gamma)            | γ (gamma)            | ガンマ             |
+| Δ (Delta)            | δ (delta)            | デルタ             |
+| Ε (Epsilon)          | ε (epsilon)          | イプシロン         |
+| Ζ (Zeta)             | ζ (zeta)             | ゼータ             |
+| Η (Eta)              | η (eta)              | イータ             |
+| Θ (Theta)            | θ (theta)            | シータ             |
+| Ι (Iota)             | ι (iota)             | イオタ             |
+| Κ (Kappa)            | κ (kappa)            | カッパ             |
+| Λ (Lambda)           | λ (lambda)           | ラムダ             |
+| Μ (Mu)               | μ (mu)               | ミュー             |
+| Ν (Nu)               | ν (nu)               | ニュー             |
+| Ξ (Xi)               | ξ (xi)               | クシ               |
+| Ο (Omicron)          | ο (omicron)          | オミクロン         |
+| Π (Pi)               | π (pi)               | パイ               |
+| Ρ (Rho)              | ρ (rho)              | ロー               |
+| Σ (Sigma)            | σ (sigma)            | シグマ             |
+| Τ (Tau)              | τ (tau)              | タウ               |
+| Υ (Upsilon)          | υ (upsilon)          | ウプシロン         |
+| Φ (Phi)              | φ (phi)              | ファイ             |
+| Χ (Chi)              | χ (chi)              | カイ               |
+| Ψ (Psi)              | ψ (psi)              | プサイ             |
+| Ω (Omega)            | ω (omega)            | オメガ             |
+
+# 数学でよく使われるギリシャ文字
+
+| ギリシャ文字 | 数学での使われ方                        | 説明                                                         | 読み方         |
+|--------------|----------------------------------------|-------------------------------------------------------------|----------------|
+| $\alpha$     | 角度、係数、変数                        | 三角形の角度や物理での係数としてよく用いられる。             | アルファ       |
+| $\beta$      | 角度、ベータ分布、係数                  | 三角形の角度やベータ関数・ベータ分布に関連する。             | ベータ         |
+| $\gamma$     | ガンマ関数、オイラー-マスケローニ定数   | 特殊関数の一つや定数 $\gamma \approx 0.577$ を表す。         | ガンマ         |
+| $\Delta$     | 差分、変化量                           | 微分の有限差分や三角形の記号、大文字で変化量を表す。         | デルタ         |
+| $\delta$     | ディラックのデルタ関数、小さい変化量     | ディラックデルタ関数や微小な変化を示す。                    | デルタ         |
+| $\epsilon$   | 無限小量、誤差                         | 無限小の量や誤差の表記に使われる。                          | イプシロン     |
+| $\zeta$      | リーマンゼータ関数                     | リーマンゼータ関数 $\zeta(s)$ を表す。                       | ゼータ         |
+| $\eta$       | 効率、変数                             | 効率（エネルギー効率など）や変数として用いられる。           | イータ         |
+| $\theta$     | 角度、変数                             | 三角形や円における角度を表すことが多い。                     | シータ         |
+| $\kappa$     | 曲率、比例定数                         | 曲率や物理学での比例定数として使用される。                   | カッパ         |
+| $\lambda$    | 固有値、波長、率                       | 線型代数で固有値や物理で波長を表す。                         | ラムダ         |
+| $\mu$        | 平均、透磁率、係数                     | 確率での平均や物理学で透磁率を表す。                         | ミュー         |
+| $\nu$        | 周波数、ポアソン比                     | 振動数や弾性理論のポアソン比に関連する。                     | ニュー         |
+| $\xi$        | 無次元量、ランダム変数                 | 特定の無次元量や確率論でランダム変数として使用。             | クシ           |
+| $\pi$        | 円周率                                 | 円周率 $\pi \approx 3.14159$。                              | パイ           |
+| $\rho$       | 密度、相関係数                        | 物理での密度や統計での相関係数を表す。                      | ロー           |
+| $\sigma$     | 標準偏差、合計、応力                   | 統計の標準偏差や総和記号、応力を表す。                      | シグマ         |
+| $\tau$       | 時間定数、円周率の2倍                 | 時間定数や $\tau = 2\pi$ として円周の一周を表す。            | タウ           |
+| $\phi$       | 黄金比、角度                          | 黄金比 $\phi \approx 1.618$ や角度で使用される。             | ファイ         |
+| $\chi$       | カイ二乗分布、特性関数                | 統計でのカイ二乗分布や特性関数を表す。                      | カイ           |
+| $\psi$       | 波動関数、角速度                      | 量子力学の波動関数や物理での角速度に関連。                  | プサイ         |
+| $\omega$     | 角速度、自然周波数、集合の極限点      | 円運動の角速度や振動の自然周波数、極限点を表す。             | オメガ         |
+
+# sympy を使ってコードからギリシャ文字を含む数式を表示
+
+{/* 元のノートブックではここで sympy による数式描画コードを実行しているが、結果は上記の表と同じ内容の LaTeX 表示なので省略（Hard rule #1 に対する OPS-02 のコードセル省略ルールを適用） */}
+
+# マークダウンを使って数式を表示する
+
+
+---
+
+### 四則演算 (Addition, Subtraction, Multiplication, Division)
+
+- 加算: ``$a + b$`` → $a + b$
+- 減算: ``$a - b$`` → $a - b$
+- 乗算: ``$a \times b$`` または ``$ab$`` → $a \times b$ または $ab$
+- 除算: ``$\frac{a}{b}$`` → $\frac{a}{b}$
+
+---
+
+### 分数 (Fractions)
+
+- 単純な分数: ``$\frac{3}{4}$`` → $\frac{3}{4}$
+- 分母が分数: ``$\frac{1}{\frac{2}{3}}$`` → $\frac{1}{\frac{2}{3}}$
+- 複雑な分数: ``$\frac{\frac{1}{a} + \frac{1}{b}}{c}$`` → $\frac{\frac{1}{a} + \frac{1}{b}}{c}$
+
+---
+
+### 少数 (Decimals)
+
+- 少数の例: ``$3.14159$`` → $3.14159$
+- 数値の近似: ``$0.333 \approx \frac{1}{3}$`` → $0.333 \approx \frac{1}{3}$
+
+---
+
+### 指数と根号 (Exponents and Radicals)
+
+- 指数: ``$a^b$`` → $a^b$
+- 平方根: ``$\sqrt{a}$`` → $\sqrt{a}$
+- 高次の根: ``$\sqrt[n]{a}$`` → $\sqrt[n]{a}$
+- 指数法則: ``$a^{m+n} = a^m \cdot a^n$`` → $a^{m+n} = a^m \cdot a^n$
+
+---
+
+### 対数関数 (Logarithmic Functions)
+
+- 自然対数: ``$\ln(x)$`` → $\ln(x)$
+- 常用対数: ``$\log_{10}(x)$`` → $\log_{10}(x)$
+- 任意の底の対数: ``$\log_a(b)$`` → $\log_a(b)$
+
+---
+
+### 微分 (Differentiation)
+
+- 一般的な微分: ``$\frac{d}{dx} f(x)$`` → $\frac{d}{dx} f(x)$
+- 具体例: ``$\frac{d}{dx} x^2 = 2x$`` → $\frac{d}{dx} x^2 = 2x$
+- 高階微分: ``$\frac{d^2}{dx^2} f(x)$`` → $\frac{d^2}{dx^2} f(x)$
+
+---
+
+### 積分 (Integration)
+
+- 定積分: ``$\int_{a}^{b} f(x) \, dx$`` → $\int_{a}^{b} f(x) \, dx$
+- 不定積分: ``$\int f(x) \, dx$`` → $\int f(x) \, dx$
+- 例: ``$\int x^2 \, dx = \frac{x^3}{3} + C$`` → $\int x^2 \, dx = \frac{x^3}{3} + C$
+
+---
+
+### 和と積 (Summations and Products)
+
+- 和の記号: ``$\sum_{i=1}^n i = \frac{n(n+1)}{2}$`` → $\sum_{i=1}^n i = \frac{n(n+1)}{2}$
+- 積の記号: ``$\prod_{i=1}^n i = n!$`` → $\prod_{i=1}^n i = n!$
+
+---
+
+### 絶対値と階乗 (Absolute Values and Factorials)
+
+- 絶対値: ``$|x|$`` → $|x|$
+- 階乗: ``$n! = n \cdot (n-1) \cdot \cdots \cdot 1$`` → $n! = n \cdot (n-1) \cdot \cdots \cdot 1$
+
+---
+
+### 行列とベクトル (Matrices and Vectors)
+
+- ベクトル: ``$\mathbf{v} = \begin{bmatrix} v_1 \\ v_2 \\ v_3 \end{bmatrix}$`` → $\mathbf{v} = \begin{bmatrix} v_1 \\ v_2 \\ v_3 \end{bmatrix}$
+- 行列: ``$A = \begin{bmatrix} a & b \\ c & d \end{bmatrix}$`` → $A = \begin{bmatrix} a & b \\ c & d \end{bmatrix}$
+- 行列積: ``$AB = \begin{bmatrix} a & b \\ c & d \end{bmatrix} \begin{bmatrix} e & f \\ g & h \end{bmatrix}$`` → $AB = \begin{bmatrix} a & b \\ c & d \end{bmatrix} \begin{bmatrix} e & f \\ g & h \end{bmatrix}$
+
+---
+
+### その他の一般的な記号 (Other Common Symbols)
+
+- 無限大: ``$\infty$`` → $\infty$
+- 比例記号: ``$y \propto x$`` → $y \propto x$
+- 微小変化: ``$\Delta x$`` → $\Delta x$
+- 極限: ``$\lim_{x \to a} f(x)$`` → $\lim_{x \to a} f(x)$
+
+---
+
+### 例として複数要素を含む式
+
+- 複雑な数式の例:
+  ``$$f(x) = \int_{0}^{\infty} e^{-x^2} \, dx + \sum_{n=1}^\infty \frac{1}{n^2} + \ln(\sqrt{x^2 + 1})$$``
+  →
+  $$
+  f(x) = \int_{0}^{\infty} e^{-x^2} \, dx + \sum_{n=1}^\infty \frac{1}{n^2} + \ln(\sqrt{x^2 + 1})
+  $$
+
+---
+
+# sympy を使ってコードで数式を表示する
+
+{/* 元のノートブックではここでも sympy による数式描画コードを実行しているが、結果は上の一覧と同じ内容なので省略（コードセル省略ルールを適用） */}
