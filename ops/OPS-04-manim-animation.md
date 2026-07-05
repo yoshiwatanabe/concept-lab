@@ -3,7 +3,7 @@
 Pre-rendered "3Blue1Brown-style" videos for step-by-step derivations/transformations that benefit from choreographed motion (vs. user-driven interaction → OPS-03).
 
 ## Prereqs (one-time, machine-level)
-Manim CE + ffmpeg installed: `pip install manim` (verify `manim --version`). If missing, stop and report — the orchestrator handles installs.
+Manim CE + ffmpeg installed: `pip install manim` (verify `manim --version`). If missing, stop and report — the orchestrator handles installs. MiKTeX is installed (2026-07-04) with AutoInstall on, so `MathTex`/`Tex` work — prefer them over plain `Text` for formulas.
 
 ## Steps
 1. Scene source: `manim/<concept-id>.py`, one Scene class per animation, named descriptively (e.g., `PositionVelocityAccelerationCascade`).

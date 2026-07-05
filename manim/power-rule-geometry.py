@@ -17,8 +17,10 @@ class SquareToCubeGrowth(ThreeDScene):
         top_strip = Rectangle(width=2.4, height=0.45, color=GREEN, fill_opacity=0.65).next_to(square, UP, buff=0)
         corner = Square(side_length=0.45, color=ORANGE, fill_opacity=0.8).next_to(right_strip, UP, buff=0)
         corner.align_to(top_strip, RIGHT)
-        formula_2 = Text("Delta A = 2x Delta x + Delta x^2", font_size=28).shift(RIGHT * 2.0)
-        note_2 = Text("Two strips become 2x", font_size=26).next_to(formula_2, DOWN)
+        formula_2 = MathTex(r"\Delta A = 2x\,\Delta x + \Delta x^2", font_size=40).shift(RIGHT * 2.0)
+        formula_2[0][3:9].set_color(GREEN)   # 2x Delta x term = the two strips
+        formula_2[0][10:].set_color(ORANGE)  # Delta x^2 term = the corner
+        note_2 = MathTex(r"\frac{d}{dx}x^2 = 2x", font_size=36).next_to(formula_2, DOWN, buff=0.5)
 
         self.play(Create(square), run_time=1.2)
         self.play(GrowFromEdge(right_strip, LEFT), GrowFromEdge(top_strip, DOWN), run_time=1.5)
@@ -47,7 +49,11 @@ class SquareToCubeGrowth(ThreeDScene):
         edge_1 = Prism(dimensions=[0.38, 0.38, 2.38], fill_color=ORANGE, fill_opacity=0.62).shift(RIGHT * 1.19 + UP * 1.19 + OUT * 0.19)
         edge_2 = Prism(dimensions=[0.38, 2.0, 0.38], fill_color=ORANGE, fill_opacity=0.62).shift(RIGHT * 1.19 + OUT * 1.19)
         edge_3 = Prism(dimensions=[2.0, 0.38, 0.38], fill_color=ORANGE, fill_opacity=0.62).shift(UP * 1.19 + OUT * 1.19)
-        formula_3 = Text("Delta V = 3x^2 Delta x + smaller terms", font_size=26).to_edge(DOWN)
+        formula_3 = MathTex(
+            r"\Delta V = 3x^2\,\Delta x + \cdots \quad\Rightarrow\quad \frac{d}{dx}x^3 = 3x^2",
+            font_size=36,
+        ).to_edge(DOWN)
+        formula_3[0][3:10].set_color(GREEN)  # 3x^2 Delta x term = the three faces
         self.add_fixed_in_frame_mobjects(formula_3)
 
         self.play(Create(cube), run_time=1.2)
