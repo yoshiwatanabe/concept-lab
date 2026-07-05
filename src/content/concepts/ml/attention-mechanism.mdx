@@ -1,0 +1,59 @@
+---
+title_ja: 注意機構（アテンション）
+title_en: The Attention Mechanism
+domain: ml
+level: 4
+prerequisites: ["softmax-temperature", "vectors-embeddings"]
+related: ["next-token-prediction", "transformer-architecture"]
+viz: ["interactive", "manim"]
+status: draft
+---
+
+import AttentionExplorer from "../../../components/viz/AttentionExplorer";
+
+# 注意機構（アテンション）
+
+## 導入
+
+アテンションは、ある単語を理解するときに「文中のどの単語を見るべきか」を重みとして決める仕組みだと考えてみよう。文「猫 が 魚 を 食べた」では、「食べた」を見るときに、誰が食べたのか、何を食べたのかが重要になる。つまり「食べた」は「猫」や「魚」に強く注意を向けると自然に読める。
+
+## 直感
+
+各単語は、質問するための Query、照合されるための Key、運ばれる情報としての Value を持つと考える。Query と Key の向きが近いほど、その単語から情報を多く受け取る。最後に、重みに応じて Value を混ぜ合わせると、選んだ単語の文脈つき表現ができる。
+
+## 可視化
+
+<AttentionExplorer client:load />
+
+> **TODO(あなたの言葉で):** ここに、スライダーを動かして気づいたことを自分の言葉で書く。（例：温度を上げると分布はどうなった？なぜ？）
+
+<video controls muted playsinline preload="metadata"
+       src={`${import.meta.env.BASE_URL}/video/attention-mechanism-flow.mp4`} />
+
+## 式
+
+まず Query と Key の内積で、どの単語がどれくらい関係しそうかを測る。
+
+$$
+s_{ij}=\frac{Q_i\cdot K_j}{\sqrt{d}}
+$$
+
+そのスコアをソフトマックスで重みに変える。
+
+$$
+\alpha_{ij}=\mathrm{softmax}(s_{ij})
+$$
+
+最後に Value を重み付きで足し合わせる。
+
+$$
+\mathrm{Attention}(Q_i,K,V)=\sum_j \alpha_{ij}V_j
+$$
+
+$\sqrt{d}$ で割るのは、ベクトルの次元が大きいと内積が大きくなりすぎ、ソフトマックスが極端になりやすいからだと考えられる。
+
+> **TODO(あなたの言葉で):** ここに、スライダーを動かして気づいたことを自分の言葉で書く。（例：温度を上げると分布はどうなった？なぜ？）
+
+## つながり
+
+埋め込みベクトルの内積で意味の近さを測り、ソフトマックスで重みに変える。この2つが組み合わさることで、次トークン予測に必要な文脈の取り込みができるようになる。
