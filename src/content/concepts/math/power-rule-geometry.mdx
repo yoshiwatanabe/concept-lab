@@ -1,0 +1,65 @@
+---
+title_ja: べき乗則の幾何学的直感
+title_en: Geometric Intuition of the Power Rule
+domain: math
+level: 3
+prerequisites: ["calculus-differentiation-integration", "function-degrees"]
+related: ["definite-integral"]
+viz: ["interactive", "manim"]
+status: migrated
+source: "lab/sessions/2026-06-28-kinematics-to-calculus.md"
+---
+
+import PowerRuleGeometry from "../../../components/viz/PowerRuleGeometry";
+
+# べき乗則の幾何学的直感
+
+## 導入
+
+> y = ax² + bx + c を微分すると → x^2 が付いている項はなくなり、y = ax + b の形になる気がします （正解）
+
+> そのルールは前に見たことがあります。ただ、その指数が係数になる、という機械的な手順に納得感が伴っていないので、ふわっとした感覚しかなくて気持ち悪いです。
+
+## 直感
+
+> 幅がΔx の細長いストリップが2本見えます。実際にはその2本がオーバーラップする極小の正方形の面積がダブルカウントされるのでΔx^2を引いてやらないといけないけど無視してもいいのかも。
+
+> 待って、何か２つの気づきというか納得感が見えてきた。言語化してみたい。「増加率」という言葉があたかも微分した結果と同じように言ってる。と言うことはつまりある次数のある関数の微分とは、その関数の増加率を示している？例えば加速度の変化のグラフとv-tグラフだと、加速度のグラフはv-tグラフの増加率を示している？まだフワッとしてるけど。
+
+> もうひとつはマジックナンバーのように出てきているように見えた、2や3です。x^2の式は面積を取り扱っている。増加分は2本のストリップだったし、増加率はごく微小に増えると捉えると2x。そしてx^3は立方体のイメージで、それがごく僅か増えるとしたら、「面」が３つ増える。言い換えると「x^2」が３つ増える。オーバーラップしてダブルカウントしてる部分は無視して、増加分も無視できるぐらい小さいとなると、増加率は3x^2となる。次数がさらに大きい場合は可視化は難しいが理論的に同じ理屈で係数が現れる。
+
+## 可視化
+
+<PowerRuleGeometry client:load />
+
+<video controls muted playsinline preload="metadata"
+       src={`${import.meta.env.BASE_URL}/video/power-rule-geometry-growth.mp4`} />
+
+## 式
+
+正方形と立方体の増加分を、微小な $\Delta x$ で見る。
+
+$$
+\Delta A = 2x\Delta x + \Delta x^2
+$$
+
+$$
+\Delta V = 3x^2\Delta x + 3x\Delta x^2 + \Delta x^3
+$$
+
+> (積分でなぜ3で割るか) 3で割る → x³を微分すると3x²。だから逆にx²を積分するときは3で割って x³/3。
+> 一般化: 微分 xⁿ → n·xⁿ⁻¹ ／ 積分 xⁿ → xⁿ⁺¹/(n+1)
+
+$$
+\frac{d}{dx}x^n = nx^{n-1}
+\qquad
+\int x^n dx = \frac{x^{n+1}}{n+1}+C
+$$
+
+## つながり
+
+> (積分で現れるcについて) c が増えることになるだろうけど、どこからcがやってきたのか疑問です。
+
+> そもそも分からないものだ、という説明は安心感があります。分からないものをそのままわからないものとして扱うところに、数学によく現れる抽象的な扱うアプローチを感じます。
+
+不定積分で残る $C$ は、微分で消えた定数が復元不能であることをそのまま置いておく記号としてつながる。

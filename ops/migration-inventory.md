@@ -53,3 +53,6 @@ math: taylor-series (← calculus-differentiation-integration), fourier-series (
 stats: confidence-intervals (← standard-error), bayes-theorem (← bernoulli-distribution), p-value-pitfalls (← statistical-significance), anova (← t-test)
 ml: gradient-descent (← calculus-applications), linear-regression (← least-squares-method), backpropagation (← gradient-descent, activation-functions)
 physics: kinematics-v-t-graph (← calculus-differentiation-integration) — episode 2026-06-28 material
+
+## Session-derived concepts
+| ☑ | lab/sessions/2026-06-28-kinematics-to-calculus.md | kinematics-v-t-graph (stub→migrated), power-rule-geometry, definite-integral | see session file |
